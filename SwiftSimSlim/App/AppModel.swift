@@ -38,7 +38,10 @@ final class AppModel {
 
   init(
     deviceSets: [String] = ["", "testing"], runner: CommandRunner? = nil,
-    defaults: UserDefaults = .standard, automaticallyMeasureDisk: Bool = true
+    defaults: UserDefaults = .standard, automaticallyMeasureDisk: Bool = true,
+    writeOverrides: @escaping @Sendable (String, Set<String>) async throws -> Void = {
+      try DisabledStore.merge(udid: $0, desired: $1)
+    }
   ) {
     self.defaults = defaults
     self.automaticallyMeasureDisk = automaticallyMeasureDisk
@@ -51,7 +54,8 @@ final class AppModel {
     commandRunner.report = { [weak self] event in
       Task { @MainActor [weak self] in self?.receive(event) }
     }
-    backend = SimSlimBackend(runner: commandRunner, deviceSets: deviceSets)
+    backend = SimSlimBackend(
+      runner: commandRunner, deviceSets: deviceSets, writeOverrides: writeOverrides)
   }
 
   #if DEBUG
@@ -461,7 +465,8 @@ final class AppModel {
       runner.report = { [weak self] event in
         Task { @MainActor [weak self] in self?.receive(event, ticket: ticket) }
       }
-      let backend = SimSlimBackend(runner: runner, deviceSets: base.deviceSets)
+      let backend = SimSlimBackend(
+        runner: runner, deviceSets: base.deviceSets, writeOverrides: base.writeOverrides)
       record(.info, "\(device.name): \(ticket.action.title)")
       switch ticket.action {
       case .slim(let profile):

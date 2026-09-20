@@ -202,6 +202,7 @@ actor FakeSimulator {
   var disabled: Set<String> = []
   var commands: [[String]] = []
   var loseOverrides = false
+  func writeOverrides(_ desired: Set<String>) { disabled = desired }
   init(loseOverrides: Bool = false) { self.loseOverrides = loseOverrides }
   func execute(_ executable: String, _ args: [String]) throws -> CommandResult {
     commands.append(args)
@@ -229,7 +230,9 @@ actor FakeSimulator {
 
 @Test func profileLifecycleVerifiesAfterReboot() async throws {
   let fake = FakeSimulator()
-  let backend = SimSlimBackend(runner: CommandRunner(executor: { try await fake.execute($0, $1) }))
+  let backend = SimSlimBackend(
+    runner: CommandRunner(executor: { try await fake.execute($0, $1) }),
+    writeOverrides: { _, desired in await fake.writeOverrides(desired) })
   let label = try #require(ServiceCatalog.slimmable.first)
   let device = try await backend.find(fake.udid)
   try await backend.ensure(device, desired: [label])
@@ -242,7 +245,9 @@ actor FakeSimulator {
 
 @Test func profileRejectsLostOverridesAndOldRuntimeBeforeMutation() async throws {
   let fake = FakeSimulator(loseOverrides: true)
-  let backend = SimSlimBackend(runner: CommandRunner(executor: { try await fake.execute($0, $1) }))
+  let backend = SimSlimBackend(
+    runner: CommandRunner(executor: { try await fake.execute($0, $1) }),
+    writeOverrides: { _, desired in await fake.writeOverrides(desired) })
   let label = try #require(ServiceCatalog.slimmable.first)
   let device = try await backend.find(fake.udid)
   await #expect(throws: SimulatorError.self) { try await backend.ensure(device, desired: [label]) }
@@ -334,4 +339,16 @@ actor FakeSimulator {
   let device = RawDevice(
     udid: UUID().uuidString, name: "Fixture", state: "Booted", isAvailable: true, dataPath: nil)
   await #expect(throws: SimulatorError.self) { try await backend.disabled(device) }
+}
+
+@Test func emptyLaunchdStateIsValid() async throws {
+  let backend = SimSlimBackend(
+    runner: CommandRunner(executor: { _, _ in
+      .init(
+        data: Data("\n\tdisabled services = (no disabled services)\n".utf8), errorData: Data(),
+        status: 0)
+    }))
+  let device = RawDevice(
+    udid: UUID().uuidString, name: "Fresh", state: "Booted", isAvailable: true, dataPath: nil)
+  #expect(try await backend.disabled(device).isEmpty)
 }

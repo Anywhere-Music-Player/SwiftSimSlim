@@ -16,13 +16,21 @@ struct RawDevice: Sendable, Decodable {
 struct SimSlimBackend: Sendable {
   let runner: CommandRunner
   let deviceSets: [String]
+  let writeOverrides: @Sendable (String, Set<String>) async throws -> Void
   init(deviceSets: [String] = ["", "testing"], report: @escaping OperationReporter = { _ in }) {
     self.deviceSets = deviceSets
     runner = CommandRunner(report: report)
+    writeOverrides = { try DisabledStore.merge(udid: $0, desired: $1) }
   }
 
-  init(runner: CommandRunner, deviceSets: [String] = ["", "testing"]) {
+  init(
+    runner: CommandRunner, deviceSets: [String] = ["", "testing"],
+    writeOverrides: @escaping @Sendable (String, Set<String>) async throws -> Void = {
+      try DisabledStore.merge(udid: $0, desired: $1)
+    }
+  ) {
     self.runner = runner
+    self.writeOverrides = writeOverrides
     self.deviceSets = deviceSets
   }
 
@@ -94,6 +102,7 @@ struct SimSlimBackend: Sendable {
   func disabled(_ device: RawDevice, log: Bool = false) async throws -> Set<String> {
     let output = try await simctl(
       device, ["spawn", device.udid, "launchctl", "print-disabled", "system"], log: log)
+    if output.text == "disabled services = (no disabled services)" { return [] }
     guard output.text.contains("disabled services = {"), output.text.hasSuffix("}") else {
       throw SimulatorError(
         "CoreSimulator returned an incomplete launchd service state. No profile changes were applied from this response."
@@ -233,55 +242,51 @@ struct SimSlimBackend: Sendable {
         "Persistent slimming requires iOS 18.5 or newer. This simulator uses iOS \(device.osVersion)."
       )
     }
-    let deadline = Date().addingTimeInterval(600)
-    if device.state == "Shutdown" && ServiceCatalog.supportsPersistence(device.osVersion) {
+    try Task.checkCancellation()
+    var isBooted = device.isBooted
+    var current: Set<String> = []
+    if isBooted {
+      stage("Checking current service profile…", device)
+      current = try await disabled(device, log: true)
+      let delta = ServiceCatalog.delta(current: current, desired: desired)
+      if delta.disable.isEmpty && delta.enable.isEmpty {
+        stage("Service profile is already applied", device)
+        return
+      }
+    }
+    if ServiceCatalog.supportsPersistence(device.osVersion) {
+      // A changed profile already requires a restart. Stop first so all overrides
+      // can be merged at once, even when the user started with a booted device.
+      if isBooted { try await stop(device) }
+      try Task.checkCancellation()
+      var wroteOverrides = false
       do {
         stage("Applying service profile while shut down…", device)
-        try DisabledStore.merge(udid: device.udid, desired: desired)
-        try await bootAndWait(device)
-        let actual = try await disabled(device, log: true)
-        let delta = ServiceCatalog.delta(current: actual, desired: desired)
-        if delta.disable.isEmpty && delta.enable.isEmpty { return }
+        try await writeOverrides(device.udid, desired)
+        wroteOverrides = true
       } catch {
         if error is CancellationError { throw error }
-        stage("Offline changes unavailable; applying through launchctl…", device)
+        stage("Offline changes unavailable; using service batches…", device)
+        runner.report(.init(kind: .output, udid: device.udid, message: error.localizedDescription))
       }
+      // Boot/read errors must surface, not trigger another blind boot and retry.
+      try Task.checkCancellation()
+      try await bootAndWait(device)
+      isBooted = true
+      stage("Verifying service state…", device)
+      current = try await disabled(device, log: true)
+      let remaining = ServiceCatalog.delta(current: current, desired: desired)
+      if remaining.disable.isEmpty && remaining.enable.isEmpty { return }
+      if wroteOverrides {
+        stage("Runtime did not retain all offline changes; using service batches…", device)
+      }
+    } else if !isBooted {
+      try await bootAndWait(device)
+      current = try await disabled(device, log: true)
     }
-    try await bootAndWait(device)
-    let current = try await disabled(device, log: true)
     let delta = ServiceCatalog.delta(current: current, desired: desired)
     if delta.disable.isEmpty && delta.enable.isEmpty { return }
-    var pending = delta.disable.map { ("disable", $0) } + delta.enable.map { ("enable", $0) }
-    let total = pending.count
-    var completed = 0
-    for pass in 1...3 {
-      var failed: [(String, String)] = []
-      for (action, label) in pending {
-        try Task.checkCancellation()
-        guard Date() < deadline else {
-          throw SimulatorError(
-            "Profile operation exceeded its ten-minute deadline. Read back the simulator state before retrying."
-          )
-        }
-        stage("Updating services \(completed)/\(total) (pass \(pass))…", device)
-        do {
-          try await simctl(
-            device, ["spawn", device.udid, "launchctl", action, "system/" + label],
-            timeout: min(120, deadline.timeIntervalSinceNow))
-          completed += 1
-        } catch {
-          if error is CancellationError { throw error }
-          failed.append((action, label))
-        }
-      }
-      pending = failed
-      if pending.isEmpty { break }
-    }
-    guard pending.isEmpty else {
-      throw SimulatorError(
-        "\(pending.count) service changes failed after three attempts. Some changes may already be applied."
-      )
-    }
+    try await applyServiceChanges(device, disable: delta.disable, enable: delta.enable)
     stage("Restarting to apply changes…", device)
     try await stop(device)
     try await bootAndWait(device)

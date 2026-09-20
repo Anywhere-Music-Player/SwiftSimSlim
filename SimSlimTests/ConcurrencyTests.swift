@@ -107,6 +107,7 @@ private actor ParallelSimulator {
     devices = Dictionary(uniqueKeysWithValues: fixtures.map { ($0.udid, $0) })
     states = Dictionary(uniqueKeysWithValues: fixtures.map { ($0.udid, $0.state) })
   }
+  func writeOverrides(_ id: String, _ desired: Set<String>) { disabled[id] = desired }
   func holdRename(_ id: String, gate: Gate) { renameGates[id] = gate }
   func holdBoot(_ id: String, gate: Gate, fail: Bool = false) {
     bootGates[id] = gate
@@ -172,7 +173,8 @@ private func model(_ fake: ParallelSimulator) -> AppModel {
     deviceSets: ["/synthetic-test-set"],
     runner: CommandRunner(executor: { try await fake.execute($0, $1) }),
     defaults: UserDefaults(suiteName: "SwiftSimSlim-Concurrency-\(UUID())")!,
-    automaticallyMeasureDisk: false)
+    automaticallyMeasureDisk: false,
+    writeOverrides: { await fake.writeOverrides($0, $1) })
 }
 
 @Test @MainActor func anotherDeviceRemainsUsableAndBatchesHaveIndependentProgress() async throws {
