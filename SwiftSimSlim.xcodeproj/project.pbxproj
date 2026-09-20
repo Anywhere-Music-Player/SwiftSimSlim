@@ -11,14 +11,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		C79C3E4FFACCEA2AC84AC2E0 /* PBXContainerItemProxy */ = {
+		AC79EF03A9B3461E8DFF5102 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 0E8A3AD980EC179856012B7E;
 			remoteInfo = SimSlim;
 		};
-		AC79EF03A9B3461E8DFF5102 /* PBXContainerItemProxy */ = {
+		C79C3E4FFACCEA2AC84AC2E0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
 			proxyType = 1;
@@ -290,15 +290,15 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		FE41E3343258A6882539145A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 0E8A3AD980EC179856012B7E /* SimSlim */;
-			targetProxy = C79C3E4FFACCEA2AC84AC2E0 /* PBXContainerItemProxy */;
-		};
 		AC79EF03A9B3461E8DFF5101 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 0E8A3AD980EC179856012B7E /* SimSlim */;
 			targetProxy = AC79EF03A9B3461E8DFF5102 /* PBXContainerItemProxy */;
+		};
+		FE41E3343258A6882539145A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0E8A3AD980EC179856012B7E /* SimSlim */;
+			targetProxy = C79C3E4FFACCEA2AC84AC2E0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

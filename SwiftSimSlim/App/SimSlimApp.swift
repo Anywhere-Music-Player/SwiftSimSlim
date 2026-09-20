@@ -18,7 +18,7 @@ struct SimSlimApp: App {
   }()
 
   var body: some Scene {
-    WindowGroup {
+    Window("SwiftSimSlim", id: "swiftsimslim-main") {
       ContentView()
         .environment(model)
         .background(ToolbarDisplayModeConfigurator().frame(width: 0, height: 0))
