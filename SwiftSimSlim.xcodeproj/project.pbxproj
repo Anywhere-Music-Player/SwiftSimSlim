@@ -1,0 +1,560 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 110;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		77EA2F5C945E91FF03D20C23 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 23457129B871D690A3B4D86A /* LICENSE */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C79C3E4FFACCEA2AC84AC2E0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0E8A3AD980EC179856012B7E;
+			remoteInfo = SimSlim;
+		};
+		AC79EF03A9B3461E8DFF5102 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0E8A3AD980EC179856012B7E;
+			remoteInfo = SimSlim;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		23457129B871D690A3B4D86A /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
+		2DAD67B63060762100704093 /* SimSlimTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SimSlimTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2DAD67C13060763600704093 /* AcceptanceFixture.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AcceptanceFixture.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		37DD68363FC1D45D64469B99 /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = AGENTS.md; sourceTree = "<group>"; };
+		38A007151ABE87CC01A5B6E9 /* SimSlim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = SimSlim.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8EC9A00BFD09B3190AC6B222 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		9B7BED31F6F48AD5D908B2BC /* SimSlimUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = SimSlimUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E665F0BD7ED270B9A1DB6D35 /* Exceptions for "SwiftSimSlim" folder in "SimSlim" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 0E8A3AD980EC179856012B7E /* SimSlim */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		2DAD67B73060762100704093 /* SimSlimTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SimSlimTests;
+			sourceTree = "<group>";
+		};
+		2DAD67C23060763600704093 /* AcceptanceFixture */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AcceptanceFixture;
+			sourceTree = "<group>";
+		};
+		324AF522E49650081AF8AD45 /* UITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = UITests;
+			sourceTree = "<group>";
+		};
+		415AD5B7FEA5E27153E144A9 /* SwiftSimSlim */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E665F0BD7ED270B9A1DB6D35 /* Exceptions for "SwiftSimSlim" folder in "SimSlim" target */,
+			);
+			path = SwiftSimSlim;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2DAD67B33060762100704093 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		2DAD67BE3060763600704093 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		39F831DAFE5A2F37503C83B2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		7561BFB015D8F536760CB671 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		64292B1C2B2E13EAD8788FC8 = {
+			isa = PBXGroup;
+			children = (
+				415AD5B7FEA5E27153E144A9 /* SwiftSimSlim */,
+				324AF522E49650081AF8AD45 /* UITests */,
+				23457129B871D690A3B4D86A /* LICENSE */,
+				8EC9A00BFD09B3190AC6B222 /* README.md */,
+				37DD68363FC1D45D64469B99 /* AGENTS.md */,
+				2DAD67B73060762100704093 /* SimSlimTests */,
+				2DAD67C23060763600704093 /* AcceptanceFixture */,
+				FBDC4F23F93125BBEEAE800C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FBDC4F23F93125BBEEAE800C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				38A007151ABE87CC01A5B6E9 /* SimSlim.app */,
+				9B7BED31F6F48AD5D908B2BC /* SimSlimUITests.xctest */,
+				2DAD67B63060762100704093 /* SimSlimTests.xctest */,
+				2DAD67C13060763600704093 /* AcceptanceFixture.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0E8A3AD980EC179856012B7E /* SimSlim */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C57128001CE614BF8549D6BB /* Build configuration list for PBXNativeTarget "SimSlim" */;
+			buildPhases = (
+				BCE16DD0260827ECF338C787 /* Sources */,
+				7561BFB015D8F536760CB671 /* Frameworks */,
+				0189424A5A60FED329FA868E /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				415AD5B7FEA5E27153E144A9 /* SwiftSimSlim */,
+			);
+			name = SimSlim;
+			productName = SimSlim;
+			productReference = 38A007151ABE87CC01A5B6E9 /* SimSlim.app */;
+			productType = "com.apple.product-type.application";
+		};
+		2DAD67B53060762100704093 /* SimSlimTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2DAD67BC3060762100704093 /* Build configuration list for PBXNativeTarget "SimSlimTests" */;
+			buildPhases = (
+				2DAD67B23060762100704093 /* Sources */,
+				2DAD67B33060762100704093 /* Frameworks */,
+				2DAD67B43060762100704093 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AC79EF03A9B3461E8DFF5101 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				2DAD67B73060762100704093 /* SimSlimTests */,
+			);
+			name = SimSlimTests;
+			productName = SimSlimTests;
+			productReference = 2DAD67B63060762100704093 /* SimSlimTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		2DAD67C03060763600704093 /* AcceptanceFixture */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2DAD67C93060763700704093 /* Build configuration list for PBXNativeTarget "AcceptanceFixture" */;
+			buildPhases = (
+				2DAD67BD3060763600704093 /* Sources */,
+				2DAD67BE3060763600704093 /* Frameworks */,
+				2DAD67BF3060763600704093 /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				2DAD67C23060763600704093 /* AcceptanceFixture */,
+			);
+			name = AcceptanceFixture;
+			productName = AcceptanceFixture;
+			productReference = 2DAD67C13060763600704093 /* AcceptanceFixture.app */;
+			productType = "com.apple.product-type.application";
+		};
+		794AAC98ACE6EB716B86C3A5 /* SimSlimUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3AB36C5A259E6297ABD26694 /* Build configuration list for PBXNativeTarget "SimSlimUITests" */;
+			buildPhases = (
+				F9ACDEB529017EFC18F5E60A /* Sources */,
+				39F831DAFE5A2F37503C83B2 /* Frameworks */,
+				19F0976CA299F93A2DFF5F71 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FE41E3343258A6882539145A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				324AF522E49650081AF8AD45 /* UITests */,
+			);
+			name = SimSlimUITests;
+			productName = SimSlimUITests;
+			productReference = 9B7BED31F6F48AD5D908B2BC /* SimSlimUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		98F54143AB4E86B28C3AFEE0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					2DAD67B53060762100704093 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					2DAD67C03060763600704093 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+				};
+			};
+			buildConfigurationList = 862894B703A6DEDF96A9DD6C /* Build configuration list for PBXProject "SwiftSimSlim" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 64292B1C2B2E13EAD8788FC8;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 110;
+			productRefGroup = FBDC4F23F93125BBEEAE800C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0E8A3AD980EC179856012B7E /* SimSlim */,
+				794AAC98ACE6EB716B86C3A5 /* SimSlimUITests */,
+				2DAD67B53060762100704093 /* SimSlimTests */,
+				2DAD67C03060763600704093 /* AcceptanceFixture */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0189424A5A60FED329FA868E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				77EA2F5C945E91FF03D20C23 /* LICENSE in Resources */,
+			);
+		};
+		19F0976CA299F93A2DFF5F71 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		2DAD67B43060762100704093 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		2DAD67BF3060763600704093 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2DAD67B23060762100704093 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		2DAD67BD3060763600704093 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		BCE16DD0260827ECF338C787 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		F9ACDEB529017EFC18F5E60A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FE41E3343258A6882539145A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0E8A3AD980EC179856012B7E /* SimSlim */;
+			targetProxy = C79C3E4FFACCEA2AC84AC2E0 /* PBXContainerItemProxy */;
+		};
+		AC79EF03A9B3461E8DFF5101 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0E8A3AD980EC179856012B7E /* SimSlim */;
+			targetProxy = AC79EF03A9B3461E8DFF5102 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2DAD67BA3060762100704093 /* Debug configuration for PBXNativeTarget "SimSlimTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_TESTABILITY = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.xcode.SwiftSimSlim.Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SimSlim.app/Contents/MacOS/SimSlim";
+			};
+			name = Debug;
+		};
+		2DAD67BB3060762100704093 /* Release configuration for PBXNativeTarget "SimSlimTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.xcode.SwiftSimSlim.Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SimSlim.app/Contents/MacOS/SimSlim";
+			};
+			name = Release;
+		};
+		2DAD67CA3060763700704093 /* Debug configuration for PBXNativeTarget "AcceptanceFixture" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_TESTABILITY = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.anywhere.SwiftSimSlim.AcceptanceFixture;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		2DAD67CB3060763700704093 /* Release configuration for PBXNativeTarget "AcceptanceFixture" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.anywhere.SwiftSimSlim.AcceptanceFixture;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		639A7CA24D39909E713B47F7 /* Release configuration for PBXNativeTarget "SimSlim" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SwiftSimSlim/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				MARKETING_VERSION = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xcode.SwiftSimSlim;
+				PRODUCT_NAME = SimSlim;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		7082CC0B6FC1282FCEABD07A /* Debug configuration for PBXNativeTarget "SimSlim" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_TESTABILITY = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SwiftSimSlim/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				MARKETING_VERSION = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xcode.SwiftSimSlim;
+				PRODUCT_NAME = SimSlim;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		89E1FD6268CC0F221A2BE178 /* Debug configuration for PBXProject "SwiftSimSlim" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				ENABLE_TESTABILITY = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		94C1D7A82E2F92E70C5BA5D8 /* Debug configuration for PBXNativeTarget "SimSlimUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.xcode.SwiftSimSlim.SwiftSimSlim.UITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TEST_TARGET_NAME = SimSlim;
+			};
+			name = Debug;
+		};
+		9609A256A79253DD705A918E /* Release configuration for PBXNativeTarget "SimSlimUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.xcode.SwiftSimSlim.SwiftSimSlim.UITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TEST_TARGET_NAME = SimSlim;
+			};
+			name = Release;
+		};
+		E6DE6C99132752C914FEF632 /* Release configuration for PBXProject "SwiftSimSlim" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2DAD67BC3060762100704093 /* Build configuration list for PBXNativeTarget "SimSlimTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2DAD67BA3060762100704093 /* Debug configuration for PBXNativeTarget "SimSlimTests" */,
+				2DAD67BB3060762100704093 /* Release configuration for PBXNativeTarget "SimSlimTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		2DAD67C93060763700704093 /* Build configuration list for PBXNativeTarget "AcceptanceFixture" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2DAD67CA3060763700704093 /* Debug configuration for PBXNativeTarget "AcceptanceFixture" */,
+				2DAD67CB3060763700704093 /* Release configuration for PBXNativeTarget "AcceptanceFixture" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		3AB36C5A259E6297ABD26694 /* Build configuration list for PBXNativeTarget "SimSlimUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94C1D7A82E2F92E70C5BA5D8 /* Debug configuration for PBXNativeTarget "SimSlimUITests" */,
+				9609A256A79253DD705A918E /* Release configuration for PBXNativeTarget "SimSlimUITests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		862894B703A6DEDF96A9DD6C /* Build configuration list for PBXProject "SwiftSimSlim" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				89E1FD6268CC0F221A2BE178 /* Debug configuration for PBXProject "SwiftSimSlim" */,
+				E6DE6C99132752C914FEF632 /* Release configuration for PBXProject "SwiftSimSlim" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		C57128001CE614BF8549D6BB /* Build configuration list for PBXNativeTarget "SimSlim" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7082CC0B6FC1282FCEABD07A /* Debug configuration for PBXNativeTarget "SimSlim" */,
+				639A7CA24D39909E713B47F7 /* Release configuration for PBXNativeTarget "SimSlim" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+}
