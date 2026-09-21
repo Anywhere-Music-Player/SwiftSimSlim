@@ -48,7 +48,7 @@ final class WindowPersistenceTests: XCTestCase {
     // XCTest launches the process without the reopen event sent by Finder or the Dock.
     let application = try XCTUnwrap(
       NSRunningApplication.runningApplications(
-        withBundleIdentifier: "com.xcode.SwiftSimSlim"
+        withBundleIdentifier: "com.buildsucceeded.SwiftSimSlim"
       ).first)
     let url = try XCTUnwrap(application.bundleURL)
     NSWorkspace.shared.openApplication(at: url, configuration: .init())

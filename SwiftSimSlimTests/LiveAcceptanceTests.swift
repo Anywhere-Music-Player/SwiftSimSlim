@@ -34,7 +34,7 @@ func isolatedSimulatorAcceptance() async throws {
     var source = try await backend.find(sourceID)
     #expect(source.isBooted)
     let fixtureApp = try #require(env["SWIFTSIMSLIM_FIXTURE_APP"])
-    let bundleID = "com.anywhere.SwiftSimSlim.AcceptanceFixture"
+    let bundleID = "com.buildsucceeded.SwiftSimSlim.AcceptanceFixture"
     try await backend.simctl(source, ["install", sourceID, fixtureApp])
     try await backend.simctl(source, ["launch", sourceID, bundleID])
     let container = try await backend.simctl(
