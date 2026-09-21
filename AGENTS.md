@@ -4,11 +4,11 @@ Native macOS app in Swift 6 and SwiftUI. No Go, bundled CLI, daemon, or helper s
 
 ## Build and test
 
-- Use Xcode with the `SimSlim` scheme and `My Mac`: Cmd-B builds, Cmd-R runs, Cmd-U runs the native `SimSlimTests` target.
+- Use Xcode with the `SwiftSimSlim` scheme and `My Mac`: Cmd-B builds, Cmd-R runs, Cmd-U runs the native `SwiftSimSlimTests` target.
 - Prefer the Xcode build/test tools for verification. Keep generated products in Xcode's default DerivedData, outside this repository.
 - Do not add Package.swift, build scripts, a local build directory, or CI workflows unless explicitly requested.
 - Ordinary unit tests do not mutate real simulators. UI and live simulator acceptance are separate, opt-in checks.
-- `swift format lint --strict --recursive SwiftSimSlim SimSlimTests UITests AcceptanceFixture` checks Swift formatting.
+- `swift format lint --strict --recursive SwiftSimSlim SwiftSimSlimTests SwiftSimSlimUITests AcceptanceFixture` checks Swift formatting.
 - Xcode uses filesystem-synchronized source folders. Add or move files normally; no project generator is needed.
 
 ## Preserve

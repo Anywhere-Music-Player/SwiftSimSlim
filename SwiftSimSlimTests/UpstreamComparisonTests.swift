@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import SimSlim
+@testable import SwiftSimSlim
 
 /// Opt-in comparison of the original GUI's CLI backend and this app's Swift
 /// backend. A caller must create a new isolated set and provide its manifest.
@@ -28,7 +28,7 @@ func isolatedUpstreamComparison() async throws {
   else { throw SimulatorError("Invalid isolated comparison manifest.") }
   let log = ComparisonLog(root: root)
   let runner = CommandRunner(report: { log.event($0) })
-  let backend = SimSlimBackend(runner: runner, deviceSets: [manifest.set])
+  let backend = SwiftSimSlimBackend(runner: runner, deviceSets: [manifest.set])
   let inventory = try await backend.listRaw()
   guard Set(inventory.map(\.udid)) == Set(manifest.devices.values),
     inventory.allSatisfy({ $0.osVersion == "27.0" && $0.name.hasPrefix("SwiftSimSlim Comparison ") }

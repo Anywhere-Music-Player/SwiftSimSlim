@@ -172,7 +172,7 @@ struct ClonePaths: Sendable {
   }
 }
 
-extension SimSlimBackend {
+extension SwiftSimSlimBackend {
   func clone(udid: String, name: String) async throws -> SimulatorMutationResult {
     let name = try Self.normalizedName(name)
     let source = try await find(udid)

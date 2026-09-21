@@ -29,7 +29,7 @@ final class AppModel {
   var preserveBootState = true
   var presentedError: PresentedError?
 
-  @ObservationIgnored private var backend: SimSlimBackend?
+  @ObservationIgnored private var backend: SwiftSimSlimBackend?
   private var hasLoaded = false
   private var lastKnownDisabled: [String: Int]
   private var diskSizeTask: Task<Void, Never>?
@@ -54,7 +54,7 @@ final class AppModel {
     commandRunner.report = { [weak self] event in
       Task { @MainActor [weak self] in self?.receive(event) }
     }
-    backend = SimSlimBackend(
+    backend = SwiftSimSlimBackend(
       runner: commandRunner, deviceSets: deviceSets, writeOverrides: writeOverrides)
   }
 
@@ -465,7 +465,7 @@ final class AppModel {
       runner.report = { [weak self] event in
         Task { @MainActor [weak self] in self?.receive(event, ticket: ticket) }
       }
-      let backend = SimSlimBackend(
+      let backend = SwiftSimSlimBackend(
         runner: runner, deviceSets: base.deviceSets, writeOverrides: base.writeOverrides)
       record(.info, "\(device.name): \(ticket.action.title)")
       switch ticket.action {
@@ -572,7 +572,7 @@ final class AppModel {
     }
   }
 
-  private func loadDiskSizes(for snapshot: [SimulatorDevice], backend: SimSlimBackend) async {
+  private func loadDiskSizes(for snapshot: [SimulatorDevice], backend: SwiftSimSlimBackend) async {
     let revision = operationRevision
     await withTaskGroup(of: (String, SimulatorDiskMeasurement?).self) { group in
       var nextIndex = 0

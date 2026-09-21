@@ -12,7 +12,7 @@ private struct ServiceTransition: Sendable {
   let label: String
 }
 
-extension SimSlimBackend {
+extension SwiftSimSlimBackend {
   func applyServiceChanges(_ device: RawDevice, disable: [String], enable: [String]) async throws {
     guard UUID(uuidString: device.udid) != nil,
       Set(disable).isSubset(of: ServiceCatalog.slimmable),

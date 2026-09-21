@@ -233,7 +233,7 @@ enum DiskStore {
   }
 }
 
-extension SimSlimBackend {
+extension SwiftSimSlimBackend {
   func diskCleanupPlan(udid: String) async throws -> SimulatorDiskCleanupPlan {
     let device = try await find(udid)
     let root = try DiskStore.dataDirectory(device)

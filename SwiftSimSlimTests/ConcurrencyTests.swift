@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import SimSlim
+@testable import SwiftSimSlim
 
 private func device(_ number: Int, booted: Bool = false) -> SimulatorDevice {
   .init(

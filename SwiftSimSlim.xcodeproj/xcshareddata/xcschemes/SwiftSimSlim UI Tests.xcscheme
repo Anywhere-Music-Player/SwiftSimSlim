@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "0E8A3AD980EC179856012B7E"
-               BuildableName = "SimSlim.app"
-               BlueprintName = "SimSlim"
+               BuildableName = "SwiftSimSlim.app"
+               BlueprintName = "SwiftSimSlim"
                ReferencedContainer = "container:SwiftSimSlim.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -27,28 +27,21 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "NO">
-      <EnvironmentVariables>
-         <EnvironmentVariable
-            key = "SWIFTSIMSLIM_UNIT_TESTS"
-            value = "1"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-      </EnvironmentVariables>
       <Testables>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2DAD67B53060762100704093"
-               BuildableName = "SimSlimTests.xctest"
-               BlueprintName = "SimSlimTests"
+               BlueprintIdentifier = "794AAC98ACE6EB716B86C3A5"
+               BuildableName = "SwiftSimSlimUITests.xctest"
+               BlueprintName = "SwiftSimSlimUITests"
                ReferencedContainer = "container:SwiftSimSlim.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -62,8 +55,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0E8A3AD980EC179856012B7E"
-            BuildableName = "SimSlim.app"
-            BlueprintName = "SimSlim"
+            BuildableName = "SwiftSimSlim.app"
+            BlueprintName = "SwiftSimSlim"
             ReferencedContainer = "container:SwiftSimSlim.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -79,8 +72,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0E8A3AD980EC179856012B7E"
-            BuildableName = "SimSlim.app"
-            BlueprintName = "SimSlim"
+            BuildableName = "SwiftSimSlim.app"
+            BlueprintName = "SwiftSimSlim"
             ReferencedContainer = "container:SwiftSimSlim.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

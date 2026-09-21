@@ -31,8 +31,8 @@ final class WindowPersistenceTests: XCTestCase {
       abs(resized.width - original.width), 40,
       "Resize must actually occur: \(original) -> \(resized)")
     XCTAssertGreaterThan(abs(resized.width - 1260), 40, "Must differ from the default size")
-    app.menuBars.menuBarItems["SimSlim"].click()
-    app.menuItems["Quit SimSlim"].click()
+    app.menuBars.menuBarItems["SwiftSimSlim"].click()
+    app.menuItems["Quit SwiftSimSlim"].click()
     XCTAssertTrue(app.wait(for: .notRunning, timeout: 10))
     app.launch()
     try reopenApplication()

@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import SimSlim
+@testable import SwiftSimSlim
 
 @Test func catalogSafetyAndDescriptions() throws {
   let forbidden: Set<String> = [
@@ -230,7 +230,7 @@ actor FakeSimulator {
 
 @Test func profileLifecycleVerifiesAfterReboot() async throws {
   let fake = FakeSimulator()
-  let backend = SimSlimBackend(
+  let backend = SwiftSimSlimBackend(
     runner: CommandRunner(executor: { try await fake.execute($0, $1) }),
     writeOverrides: { _, desired in await fake.writeOverrides(desired) })
   let label = try #require(ServiceCatalog.slimmable.first)
@@ -245,7 +245,7 @@ actor FakeSimulator {
 
 @Test func profileRejectsLostOverridesAndOldRuntimeBeforeMutation() async throws {
   let fake = FakeSimulator(loseOverrides: true)
-  let backend = SimSlimBackend(
+  let backend = SwiftSimSlimBackend(
     runner: CommandRunner(executor: { try await fake.execute($0, $1) }),
     writeOverrides: { _, desired in await fake.writeOverrides(desired) })
   let label = try #require(ServiceCatalog.slimmable.first)
@@ -297,7 +297,7 @@ actor FakeSimulator {
 @Test func configuredDeviceSetNeverFallsBackToDefault() async throws {
   let fake = FakeSimulator()
   let set = "/tmp/SwiftSimSlim-Isolated-Unit-Test"
-  let backend = SimSlimBackend(
+  let backend = SwiftSimSlimBackend(
     runner: CommandRunner(executor: { try await fake.execute($0, $1) }), deviceSets: [set])
   _ = try await backend.rename(udid: fake.udid, name: "Scoped")
   let commands = await fake.commands
@@ -324,7 +324,7 @@ actor FakeSimulator {
     }
   }
   let replies = Replies()
-  let backend = SimSlimBackend(
+  let backend = SwiftSimSlimBackend(
     runner: CommandRunner(executor: { try await replies.execute($0, $1) }),
     deviceSets: ["/tmp/isolated-read-retry"])
   #expect(try await backend.listRaw().isEmpty)
@@ -332,7 +332,7 @@ actor FakeSimulator {
 }
 
 @Test func incompleteLaunchdStateIsRejected() async throws {
-  let backend = SimSlimBackend(
+  let backend = SwiftSimSlimBackend(
     runner: CommandRunner(executor: { _, _ in
       .init(data: Data(), errorData: Data(), status: 0)
     }))
@@ -342,7 +342,7 @@ actor FakeSimulator {
 }
 
 @Test func emptyLaunchdStateIsValid() async throws {
-  let backend = SimSlimBackend(
+  let backend = SwiftSimSlimBackend(
     runner: CommandRunner(executor: { _, _ in
       .init(
         data: Data("\n\tdisabled services = (no disabled services)\n".utf8), errorData: Data(),

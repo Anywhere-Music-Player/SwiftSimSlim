@@ -3,7 +3,7 @@
   import SwiftUI
   import Testing
 
-  @testable import SimSlim
+  @testable import SwiftSimSlim
 
   @Test(.enabled(if: ProcessInfo.processInfo.environment["SWIFTSIMSLIM_SNAPSHOT_DIR"] != nil))
   @MainActor

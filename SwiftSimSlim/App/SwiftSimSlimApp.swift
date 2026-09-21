@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 @main
-struct SimSlimApp: App {
+struct SwiftSimSlimApp: App {
   @State private var model: AppModel = {
     #if DEBUG
       if ProcessInfo.processInfo.environment["SWIFTSIMSLIM_UNIT_TESTS"] == "1" {

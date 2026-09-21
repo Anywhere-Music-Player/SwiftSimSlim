@@ -15,7 +15,7 @@ struct ProfileSidebar: View {
           .scaledToFit()
           .frame(width: 46, height: 46)
         VStack(alignment: .leading, spacing: 2) {
-          Text("SimSlim")
+          Text("SwiftSimSlim")
             .font(.title2.bold())
           Text(mode == .memory ? "Service slimming · reversible" : "Disk analysis & cleanup")
             .font(.caption)

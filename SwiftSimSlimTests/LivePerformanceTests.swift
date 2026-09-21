@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import SimSlim
+@testable import SwiftSimSlim
 
 /// An explicit manifest from a newly created isolated set is required. Ordinary
 /// Cmd-U never enables this check or mutates an existing simulator.
@@ -24,7 +24,7 @@ func isolatedIPhone18ProPerformance() async throws {
       == root.appendingPathComponent("Devices").path
   else { throw SimulatorError("Expected a fresh isolated performance fixture.") }
   let log = PerformanceLog(root: root)
-  let backend = SimSlimBackend(deviceSets: [manifest.set], report: { log.event($0) })
+  let backend = SwiftSimSlimBackend(deviceSets: [manifest.set], report: { log.event($0) })
   let devices = try await backend.listRaw()
   let device = try #require(devices.first)
   guard devices.count == 1, device.udid == manifest.udid,

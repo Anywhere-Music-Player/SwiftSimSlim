@@ -13,7 +13,7 @@ struct RawDevice: Sendable, Decodable {
 }
 
 /// In-process Swift implementation. No bundled CLI, daemon, or helper service.
-struct SimSlimBackend: Sendable {
+struct SwiftSimSlimBackend: Sendable {
   let runner: CommandRunner
   let deviceSets: [String]
   let writeOverrides: @Sendable (String, Set<String>) async throws -> Void
@@ -246,6 +246,10 @@ struct SimSlimBackend: Sendable {
     var isBooted = device.isBooted
     var current: Set<String> = []
     if isBooted {
+      // simctl can report Booted before launchd is ready to answer queries.
+      stage("Waiting for simulator readiness…", device)
+      try await simctl(device, ["bootstatus", device.udid, "-b"], timeout: 600)
+      try Task.checkCancellation()
       stage("Checking current service profile…", device)
       current = try await disabled(device, log: true)
       let delta = ServiceCatalog.delta(current: current, desired: desired)

@@ -1,6 +1,6 @@
 import Foundation
 
-extension SimSlimBackend {
+extension SwiftSimSlimBackend {
   func measure(udid: String) async throws -> SimulatorMeasurement {
     let device = try await find(udid)
     let result = await measurements([device])

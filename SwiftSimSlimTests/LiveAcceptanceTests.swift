@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import SimSlim
+@testable import SwiftSimSlim
 
 /// Opt in explicitly. Each run creates an entirely new simulator set, never
 /// accepts an existing UUID, and records cleanup targets as they are created.
@@ -16,7 +16,7 @@ func isolatedSimulatorAcceptance() async throws {
   let set = root.appendingPathComponent("Devices").path
   try FileManager.default.createDirectory(atPath: set, withIntermediateDirectories: true)
   let log = LiveLog(root: root)
-  let backend = SimSlimBackend(deviceSets: [set], report: { log.record($0) })
+  let backend = SwiftSimSlimBackend(deviceSets: [set], report: { log.record($0) })
   let runtime = env["SWIFTSIMSLIM_LIVE_RUNTIME"] ?? "com.apple.CoreSimulator.SimRuntime.iOS-26-5"
   let type = "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro"
   var created: [String] = []

@@ -74,7 +74,7 @@ struct ContentView: View {
             ToolbarActionLabel("Unslim", systemImage: "plus.circle")
           }
           .disabled(!model.canOperateOnSelection)
-          .help("Restore all SimSlim-managed services")
+          .help("Restore all SwiftSimSlim-managed services")
         }
       } else {
         ToolbarItem(placement: .automatic) {
@@ -199,7 +199,7 @@ struct ContentView: View {
     .alert(item: Binding(get: { model.presentedError }, set: { model.presentedError = $0 })) {
       error in
       Alert(
-        title: Text("SimSlim couldn’t finish"),
+        title: Text("SwiftSimSlim couldn’t finish"),
         message: Text(error.message),
         dismissButton: .default(Text("OK"))
       )
@@ -392,7 +392,7 @@ struct ContentView: View {
         actionTitle: "Clone Simulator",
         systemImage: "plus.square.on.square",
         explanation:
-          "The clone copies the source simulator’s apps, data, settings, and current SimSlim service profile. SimSlim rebases simulator-local links, rebuilds generated app registrations, and audits the running clone for open paths into the source. SimSlim may briefly boot a shutdown source to read its profile, or briefly shut down a booted source to make the copy. The source returns to its original boot state, and the clone finishes shutdown.",
+          "The clone copies the source simulator’s apps, data, settings, and current SwiftSimSlim service profile. SwiftSimSlim rebases simulator-local links, rebuilds generated app registrations, and audits the running clone for open paths into the source. SwiftSimSlim may briefly boot a shutdown source to read its profile, or briefly shut down a booted source to make the copy. The source returns to its original boot state, and the clone finishes shutdown.",
         initialName: "\(device.name) Copy",
         device: device
       ) { name in
