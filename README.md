@@ -1,8 +1,69 @@
-# SwiftSimSlim
+<div align="center">
+  <img src="SwiftSimSlim/Resources/AppIcon.icon/Assets/ChatGPT%20Image%20Sep%2020,%202026%20at%2011_15_54%20PM.png" alt="SwiftSimSlim app icon" width="144" height="144">
+  <h1>SwiftSimSlim</h1>
+  <p>A native macOS app for managing and slimming iOS simulators.</p>
+  <p>
+    <a href="https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases/latest"><img src="https://img.shields.io/github/v/release/Anywhere-Music-Player/SwiftSimSlim" alt="Latest release"></a>
+    <img src="https://img.shields.io/badge/platform-macOS-007AFF" alt="Platform: macOS">
+    <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&amp;logoColor=white" alt="Swift 6">
+    <img src="https://img.shields.io/badge/UI-SwiftUI-007AFF" alt="UI: SwiftUI">
+    <a href="LICENSE"><img src="https://img.shields.io/github/license/Anywhere-Music-Player/SwiftSimSlim" alt="MIT license"></a>
+  </p>
+  <p>
+    <a href="#quick-start"><strong>Build &amp; run</strong></a> ·
+    <a href="https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases/latest">Download source</a> ·
+    <a href="#documentation">Documentation</a> ·
+    <a href="https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases">Releases</a> ·
+    <a href="https://github.com/Anywhere-Music-Player/SwiftSimSlim/issues">Issues</a>
+  </p>
+</div>
 
-A native macOS app in Swift and SwiftUI for managing and slimming iOS simulators. It calls Apple’s `simctl` directly and shows progress and command logs for each device.
+SwiftSimSlim calls Apple’s `simctl` directly, with an in-process Swift backend, per-device progress, and command logs. Select the services your workflow needs, review a profile, and verify its state after applying it.
 
-Persistent slimming requires an installed iOS Simulator runtime, version 18.5 or later.
+## Highlights
+
+| Capability | What you can do |
+| --- | --- |
+| Service profiles | Slim or re-enable allowlisted services while keeping required compatibility services enabled. |
+| Preview and recovery | Review planned changes, save the original service state, export it as JSON, and restore a saved profile. |
+| Simulator management | Manage simulator lifecycle, clone a device, and review disk cleanup before confirming it. |
+| Independent operations | Follow separate progress and logs for each device, with at most two heavy operations at once. |
+| Boot-state preservation | Return a simulator to its original Booted or Shutdown state after a successful profile operation. |
+
+## Quick start
+
+### Install from source
+
+You need a Mac with Xcode and its simulator tools, plus an installed iOS Simulator runtime. **Persistent slimming requires iOS 18.5 or later.** The project uses Swift 6 and an Icon Composer app icon; use Xcode capable of opening those project resources. See the [verification matrix](#safety-and-test-matrix) for the recorded environment and its limits.
+
+The published **26.0** release provides source archives, with no prebuilt app attached. You can [download the release source](https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases/latest) or clone the current development version:
+
+```sh
+git clone https://github.com/Anywhere-Music-Player/SwiftSimSlim.git
+cd SwiftSimSlim
+open SwiftSimSlim.xcodeproj
+```
+
+In Xcode, select **SwiftSimSlim → My Mac**, then press **Cmd-R** to build and launch. This README describes the current branch; features added after 26.0 require building the current source.
+
+### Apply your first profile
+
+1. Select a simulator in the app. Use a disposable device or clone it first if you want to keep a separate copy.
+2. Choose the service categories to keep enabled for your app’s workflow.
+3. Choose **Service State → Preview Service Changes**, inspect the planned labels, then apply the profile. **Slim** also presents this preview before applying.
+4. Follow progress and command details in Activity. Use **Restore Saved State** to return to the saved managed-service profile, or **Unslim** to enable all managed services.
+
+Disabling services can affect features that depend on them. A saved service state is not an app-data backup and cannot undo Erase or disk cleanup. [Read the recovery behavior and limits](#preview-save-export-and-restore) before changing a device you rely on.
+
+## Documentation
+
+- [Architecture and comparison with simslim](#why-swift)
+- [How slimming works](#how-slimming-avoids-unnecessary-work)
+- [Preview, save, export, and restore](#preview-save-export-and-restore)
+- [Safety evidence and reproducible checks](#safety-and-test-matrix)
+- [Measured service-update time](#measured-service-update-time)
+- [Boot-state behavior](#why-a-simulator-can-finish-in-shutdown)
+- [Development and contributions](#development-and-contributions)
 
 ## Why Swift
 
@@ -133,6 +194,16 @@ These are individual local observations, not averages or guaranteed speedups. Ma
 | Shutdown | Off | Booted |
 
 Turn this option off before applying a profile if you want a stopped simulator to remain booted afterward. Returning to Shutdown does not undo slimming: the verified service overrides persist for the next boot. A simulator that started booted should remain booted after a successful operation; a failure or cancellation can interrupt that sequence and is reported in Activity.
+
+## Development and contributions
+
+Open `SwiftSimSlim.xcodeproj` and select **SwiftSimSlim → My Mac**. Use **Cmd-B** to build, **Cmd-R** to run, and **Cmd-U** for ordinary unit tests. Keep generated products in Xcode’s default DerivedData. The app and backend live in one Swift 6 / SwiftUI project; there is no bundled CLI, daemon, or helper service.
+
+Read [AGENTS.md](AGENTS.md) for project conventions and safety boundaries. The [ordinary checks](#reproduce-ordinary-checks) include the formatting command; [live acceptance](#reproduce-the-live-safety-matrix) is a separate, opt-in procedure using disposable simulators.
+
+Bug reports and pull requests are welcome. [Open an issue](https://github.com/Anywhere-Music-Player/SwiftSimSlim/issues) with the macOS, Xcode, and simulator runtime versions, reproduction steps, and relevant command logs. Remove personal paths or other sensitive details before sharing logs.
+
+For a pull request, explain the behavior change and validation performed. Keep changes focused, preserve upstream attribution and simulator safety boundaries, and report unit tests, live-runtime checks, and visual verification separately. See [UpstreamFollowUp.md](UpstreamFollowUp.md) for the recorded upstream comparison and follow-up.
 
 ## Origin and license
 
