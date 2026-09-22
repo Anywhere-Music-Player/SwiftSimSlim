@@ -20,6 +20,10 @@
 
 SwiftSimSlim calls Apple’s `simctl` directly, with an in-process Swift backend, per-device progress, and command logs. Select the services your workflow needs, review a profile, and verify its state after applying it.
 
+<p align="center">
+  <a href="docs/images/swiftsimslim-overview.png"><img src="docs/images/swiftsimslim-overview.png" alt="SwiftSimSlim showing installed simulators, service categories, memory usage, and activity logs" width="1000"></a>
+</p>
+
 ## Highlights
 
 | Capability | What you can do |
