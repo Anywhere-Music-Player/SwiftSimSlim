@@ -20,6 +20,9 @@ final class AppModel {
   @ObservationIgnored private let defaults: UserDefaults
   @ObservationIgnored private let automaticallyMeasureDisk: Bool
   private(set) var activity: [ActivityEntry] = []
+  private(set) var servicePlans: [String: ServiceChangePlan] = [:]
+  private(set) var serviceBackups: [String: ServiceStateBackup] = [:]
+  @ObservationIgnored private let backupStore: ServiceBackupStore
   private(set) var isRefreshing = false
   private(set) var lastUpdated: Date?
   var selectedUDIDs: Set<String> = []
@@ -28,6 +31,7 @@ final class AppModel {
   var selectedDiskCleanupCategoryIDs: Set<String> = []
   var preserveBootState = true
   var presentedError: PresentedError?
+  var serviceBackupExport: ServiceBackupExport?
 
   @ObservationIgnored private var backend: SwiftSimSlimBackend?
   private var hasLoaded = false
@@ -39,11 +43,13 @@ final class AppModel {
   init(
     deviceSets: [String] = ["", "testing"], runner: CommandRunner? = nil,
     defaults: UserDefaults = .standard, automaticallyMeasureDisk: Bool = true,
+    backupStore: ServiceBackupStore = ServiceBackupStore(),
     writeOverrides: @escaping @Sendable (String, Set<String>) async throws -> Void = {
       try DisabledStore.merge(udid: $0, desired: $1)
     }
   ) {
     self.defaults = defaults
+    self.backupStore = backupStore
     self.automaticallyMeasureDisk = automaticallyMeasureDisk
     lastKnownDisabled =
       defaults
@@ -59,6 +65,37 @@ final class AppModel {
   }
 
   #if DEBUG
+    /// Opt-in UI fixture: no command reaches CoreSimulator or the user's backup store.
+    static func serviceSafetyUITest(root: String) throws -> AppModel {
+      let directory = URL(fileURLWithPath: root).standardizedFileURL
+      // The UI runner and tested app can have different sandbox temporary roots.
+      // Require the unique, pre-created fixture directory supplied by the test.
+      let prefix = "SwiftSimSlim-ui-safety-"
+      guard directory.lastPathComponent.hasPrefix(prefix),
+        UUID(uuidString: String(directory.lastPathComponent.dropFirst(prefix.count))) != nil,
+        FileManager.default.fileExists(atPath: directory.path)
+      else { throw SimulatorError("Invalid UI fixture directory.") }
+      let fixture = ServiceSafetyUITestFixture(root: directory)
+      let backups = directory.appendingPathComponent("Backups")
+      try FileManager.default.createDirectory(at: backups, withIntermediateDirectories: true)
+      let device = RawDevice(
+        udid: ServiceSafetyUITestFixture.udid, name: "Service Safety UI Fixture", state: "Booted",
+        isAvailable: true, dataPath: nil, set: "/synthetic-ui-set", osVersion: "27.0")
+      let backupURL = backups.appendingPathComponent(device.udid + ".json")
+      if !FileManager.default.fileExists(atPath: backupURL.path) {
+        try ServiceStateBackup(device: device, disabled: []).exportedData().write(
+          to: backupURL, options: .atomic)
+      }
+      let model = AppModel(
+        deviceSets: [device.set],
+        runner: CommandRunner(executor: { try await fixture.execute($0, $1) }),
+        defaults: UserDefaults(suiteName: directory.lastPathComponent)!,
+        automaticallyMeasureDisk: false, backupStore: ServiceBackupStore(directory: backups),
+        writeOverrides: { _, desired in try await fixture.writeOverrides(desired) })
+      model.selectedUDIDs = [device.udid]
+      return model
+    }
+
     static func preview() -> AppModel {
       let model = AppModel(deviceSets: [])
       model.hasLoaded = true
@@ -116,7 +153,7 @@ final class AppModel {
       ?? ""
     let target = event.udid.map { "[\($0)] " } ?? ""
     commandLog.append("[\(timestamp)] \(context)\(target)\(event.message)")
-    if commandLog.count > 2000 { commandLog.removeFirst(commandLog.count - 2000) }
+    if commandLog.count > 10000 { commandLog.removeFirst(commandLog.count - 10000) }
   }
 
   var isBusy: Bool { isRefreshing || !operations.entries.isEmpty }
@@ -233,6 +270,14 @@ final class AppModel {
         updateMeasurementsFromDevices()
         updateStateCacheFromLiveDevices()
         lastUpdated = Date()
+        for device in devices where !isOperating(device) {
+          do { serviceBackups[device.udid] = try await backupStore.load(device.udid) } catch {
+            serviceBackups.removeValue(forKey: device.udid)
+            recordFailure(
+              "\(device.name): saved state could not be read: \(error.localizedDescription)",
+              present: false)
+          }
+        }
         if automaticallyMeasureDisk { scheduleDiskSizeRefresh(for: devices) }
       } catch {
         recordFailure("Refresh failed: \(error.localizedDescription)", present: true)
@@ -389,6 +434,26 @@ final class AppModel {
   }
 
   func applyProfileToSelection() async { await applyProfile(to: selectedDevices) }
+  func previewProfile(_ profile: ServiceProfileSnapshot, for devices: [SimulatorDevice]) async {
+    for device in devices { servicePlans.removeValue(forKey: device.udid) }
+    await run(.preview(profile), on: devices)
+  }
+
+  func applyReviewedProfile(
+    _ profile: ServiceProfileSnapshot, plans: [ServiceChangePlan], to devices: [SimulatorDevice]
+  ) async {
+    guard Set(plans.map { $0.device.udid }) == Set(devices.map(\.udid)) else { return }
+    var reviewed = profile
+    // Offline estimates must be rechecked live; they are never used as proof.
+    reviewed.reviewedStates = Dictionary(
+      uniqueKeysWithValues: plans.filter(\.isLive).map { ($0.device.udid, $0.current) })
+    await run(.slim(reviewed), on: devices)
+  }
+
+  func restoreSavedState(for device: SimulatorDevice) async {
+    guard let backup = serviceBackups[device.udid] else { return }
+    await run(.restoreSaved(backup), on: [device])
+  }
   func applyProfile(to device: SimulatorDevice) async { await applyProfile(to: [device]) }
   func applyProfile(to devices: [SimulatorDevice]) async {
     do {
@@ -458,6 +523,14 @@ final class AppModel {
   private func perform(_ ticket: OperationCoordinator.Ticket, batchID: UUID) async -> Bool {
     let device = ticket.device
     var succeeded = false
+    defer {
+      receive(
+        .init(
+          kind: .finished, udid: device.udid,
+          message:
+            "\(succeeded ? "SUCCEEDED" : "FAILED OR CANCELLED") · TIMING operation-total (queue through refresh): \(ticket.reservedAt.duration(to: .now))"
+        ), ticket: ticket)
+    }
     do {
       try await operations.acquire(ticket)
       guard let base = backend else { throw SimulatorError("Backend unavailable.") }
@@ -469,14 +542,32 @@ final class AppModel {
         runner: runner, deviceSets: base.deviceSets, writeOverrides: base.writeOverrides)
       record(.info, "\(device.name): \(ticket.action.title)")
       switch ticket.action {
+      case .preview(let profile):
+        let desired = try ServiceCatalog.desired(except: profile.categories, keep: profile.labels)
+        servicePlans[device.udid] = try await backend.previewProfile(
+          udid: device.udid, desired: desired)
       case .slim(let profile):
-        _ = try await backend.slim(
-          udid: device.udid, exceptCategories: profile.categories,
-          keepLabels: profile.labels, preserveBootState: profile.preserveBootState)
+        let store = backupStore
+        try await backend.configureWithBackup(
+          udid: device.udid,
+          desired: ServiceCatalog.desired(except: profile.categories, keep: profile.labels),
+          preserveBootState: profile.preserveBootState,
+          expectedCurrent: profile.reviewedStates[device.udid],
+          save: { try await store.save($0) })
         setCachedDisabled(profile.disabledCount, for: device.udid)
       case .restore(let preserve):
-        _ = try await backend.restore(udid: device.udid, preserveBootState: preserve)
+        let store = backupStore
+        try await backend.configureWithBackup(
+          udid: device.udid, desired: [], preserveBootState: preserve,
+          save: { try await store.save($0) })
         setCachedDisabled(0, for: device.udid)
+      case .restoreSaved(let backup):
+        guard backup.udid == device.udid else {
+          throw SimulatorError("Saved state belongs to a different simulator.")
+        }
+        try await backend.restoreSavedState(backup)
+        setCachedDisabled(
+          backup.disabled.intersection(ServiceCatalog.slimmable).count, for: device.udid)
       case .clean(let categories, let preserve):
         let result = try await backend.cleanDisk(
           udid: device.udid, categoryIDs: categories,
@@ -493,10 +584,14 @@ final class AppModel {
         record(.success, "\(device.name): clone ready — \(result.name ?? name) (\(result.udid))")
       case .erase:
         _ = try await backend.erase(udid: device.udid)
+        try await backupStore.remove(device.udid)
+        serviceBackups.removeValue(forKey: device.udid)
         measurements.removeValue(forKey: device.udid)
         setCachedDisabled(0, for: device.udid)
       case .delete:
         _ = try await backend.delete(udid: device.udid)
+        try await backupStore.remove(device.udid)
+        serviceBackups.removeValue(forKey: device.udid)
         measurements.removeValue(forKey: device.udid)
         diskSizes.removeValue(forKey: device.udid)
         removeCachedDisabled(for: device.udid)

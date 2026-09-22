@@ -69,12 +69,25 @@ struct ContentView: View {
 
         ToolbarItem(placement: .automatic) {
           Button {
-            Task { await model.restoreSelection() }
+            managementSheet = .servicePreview(model.selectedDevices, unslim: true)
           } label: {
             ToolbarActionLabel("Unslim", systemImage: "plus.circle")
           }
           .disabled(!model.canOperateOnSelection)
           .help("Restore all SwiftSimSlim-managed services")
+        }
+        ToolbarItem(placement: .automatic) {
+          Menu {
+            Button("Preview Service Changes…") {
+              managementSheet = .servicePreview(model.selectedDevices, unslim: false)
+            }
+            .disabled(!model.canOperateOnSelection)
+            if let device = singleSelectedDevice {
+              SavedStateActions(device: device)
+            }
+          } label: {
+            ToolbarActionLabel("Service State", systemImage: "arrow.uturn.backward.circle")
+          }
         }
       } else {
         ToolbarItem(placement: .automatic) {
@@ -195,6 +208,19 @@ struct ContentView: View {
     }
     .sheet(item: $managementSheet) { sheet in
       managementSheetContent(for: sheet)
+    }
+    .fileExporter(
+      isPresented: Binding(
+        get: { model.serviceBackupExport != nil },
+        set: { if !$0 { model.serviceBackupExport = nil } }),
+      document: model.serviceBackupExport.map { ServiceBackupDocument(data: $0.data) },
+      contentType: .json,
+      defaultFilename:
+        "SwiftSimSlim-\(model.serviceBackupExport?.udid ?? "simulator")-original-state"
+    ) { result in
+      if case .failure(let error) = result {
+        model.presentedError = .init(message: error.localizedDescription)
+      }
     }
     .alert(item: Binding(get: { model.presentedError }, set: { model.presentedError = $0 })) {
       error in
@@ -386,6 +412,8 @@ struct ContentView: View {
   @ViewBuilder
   private func managementSheetContent(for sheet: SimulatorManagementSheet) -> some View {
     switch sheet {
+    case .servicePreview(let devices, let unslim):
+      ServiceSafetyView(devices: devices, unslim: unslim)
     case .clone(let device):
       SimulatorNameSheet(
         title: "Clone Simulator",
@@ -403,7 +431,7 @@ struct ContentView: View {
       SlimmingRecommendationSheet(devices: devices) { device in
         presentAfterSheetDismissal(.clone(device))
       } onContinue: {
-        Task { await model.applyProfile(to: devices) }
+        presentAfterSheetDismissal(.servicePreview(devices, unslim: false))
       }
 
     case .rename(let device):

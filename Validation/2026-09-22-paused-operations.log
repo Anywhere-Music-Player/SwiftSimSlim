@@ -1,0 +1,504 @@
+2026-09-22T10:24:24Z [host] /usr/bin/xcodebuild -version
+2026-09-22T10:24:24Z [host] Xcode 27.0
+
+2026-09-22T10:24:24Z [host] Build version 27A266a
+
+2026-09-22T10:24:24Z [host] Exit 0
+2026-09-22T10:24:24Z [host] /usr/bin/sw_vers
+2026-09-22T10:24:24Z [host] ProductName:		macOS
+ProductVersion:		27.0
+BuildVersion:		26A428
+
+2026-09-22T10:24:24Z [host] Exit 0
+2026-09-22T10:24:24Z [host] /usr/sbin/sysctl -n machdep.cpu.brand_string
+2026-09-22T10:24:24Z [host] Apple M1 Pro
+
+2026-09-22T10:24:24Z [host] Exit 0
+2026-09-22T10:24:24Z [host] /usr/sbin/sysctl -n hw.memsize
+2026-09-22T10:24:24Z [host] 17179869184
+
+2026-09-22T10:24:24Z [host] Exit 0
+2026-09-22T10:24:24Z [host] /usr/bin/xcrun simctl --set /private/tmp/SwiftSimSlim-safety-20260922-c/Devices create 'SwiftSimSlim Safety QA' com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro com.apple.CoreSimulator.SimRuntime.iOS-27-0
+2026-09-22T10:24:25Z [host] FD8EC1CA-FDF4-46D5-AD4D-219DF550564A
+
+2026-09-22T10:24:25Z [host] Exit 0
+2026-09-22T10:24:25Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] Booting simulator…
+2026-09-22T10:24:25Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] /usr/bin/xcrun simctl --set /private/tmp/SwiftSimSlim-safety-20260922-c/Devices boot FD8EC1CA-FDF4-46D5-AD4D-219DF550564A
+2026-09-22T10:24:27Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] Exit 0
+2026-09-22T10:24:27Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] /usr/bin/xcrun simctl --set /private/tmp/SwiftSimSlim-safety-20260922-c/Devices bootstatus FD8EC1CA-FDF4-46D5-AD4D-219DF550564A -b
+2026-09-22T10:24:27Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] Monitoring boot status for SwiftSimSlim Safety QA (FD8EC1CA-FDF4-46D5-AD4D-219DF550564A).
+
+2026-09-22T10:24:34Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:24:34 +0000] Status=1, isTerminal=NO, Elapsed=00:07.
+	Waiting on BackBoard
+
+
+2026-09-22T10:24:43Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:24:43 +0000] Status=2, isTerminal=NO, Elapsed=00:16.
+	Waiting on Data Migration
+		Reason:Gathering plugins
+		Migration Elapsed:00:00 seconds
+
+
+2026-09-22T10:24:45Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:24:45 +0000] Status=2, isTerminal=NO, Elapsed=00:19.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.MobileContainerManager.ContainerMigrator (ContainerMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:00 seconds
+
+
+2026-09-22T10:24:49Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:24:49 +0000] Status=2, isTerminal=NO, Elapsed=00:22.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:03 seconds
+
+
+2026-09-22T10:24:51Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:24:51 +0000] Status=2, isTerminal=NO, Elapsed=00:25.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:06 seconds
+
+
+2026-09-22T10:24:54Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:24:54 +0000] Status=2, isTerminal=NO, Elapsed=00:27.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:09 seconds
+
+
+2026-09-22T10:24:54Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:24:54 +0000] Status=2, isTerminal=NO, Elapsed=00:28.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:11 seconds
+
+
+2026-09-22T10:24:56Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:24:56 +0000] Status=2, isTerminal=NO, Elapsed=00:29.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:12 seconds
+
+
+2026-09-22T10:24:56Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:24:56 +0000] Status=2, isTerminal=NO, Elapsed=00:30.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:13 seconds
+
+
+2026-09-22T10:24:57Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:24:57 +0000] Status=2, isTerminal=NO, Elapsed=00:31.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:14 seconds
+
+
+2026-09-22T10:25:00Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:00 +0000] Status=2, isTerminal=NO, Elapsed=00:33.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:15 seconds
+
+
+2026-09-22T10:25:02Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:02 +0000] Status=2, isTerminal=NO, Elapsed=00:35.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:17 seconds
+
+
+2026-09-22T10:25:02Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:02 +0000] Status=2, isTerminal=NO, Elapsed=00:36.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:19 seconds
+
+
+2026-09-22T10:25:03Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:03 +0000] Status=2, isTerminal=NO, Elapsed=00:36.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:20 seconds
+
+
+2026-09-22T10:25:05Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:05 +0000] Status=2, isTerminal=NO, Elapsed=00:38.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:21 seconds
+
+
+2026-09-22T10:25:05Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:05 +0000] Status=2, isTerminal=NO, Elapsed=00:39.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:22 seconds
+
+
+2026-09-22T10:25:08Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:08 +0000] Status=2, isTerminal=NO, Elapsed=00:41.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:23 seconds
+
+
+2026-09-22T10:25:09Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:09 +0000] Status=2, isTerminal=NO, Elapsed=00:42.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:25 seconds
+
+
+2026-09-22T10:25:10Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:10 +0000] Status=2, isTerminal=NO, Elapsed=00:44.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:26 seconds
+
+
+2026-09-22T10:25:11Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:11 +0000] Status=2, isTerminal=NO, Elapsed=00:44.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:28 seconds
+
+
+2026-09-22T10:25:11Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:11 +0000] Status=2, isTerminal=NO, Elapsed=00:45.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:28 seconds
+
+
+2026-09-22T10:25:12Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:12 +0000] Status=2, isTerminal=NO, Elapsed=00:45.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:29 seconds
+
+
+2026-09-22T10:25:13Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:13 +0000] Status=2, isTerminal=NO, Elapsed=00:47.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:30 seconds
+
+
+2026-09-22T10:25:15Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:15 +0000] Status=2, isTerminal=NO, Elapsed=00:48.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:31 seconds
+
+
+2026-09-22T10:25:16Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:16 +0000] Status=2, isTerminal=NO, Elapsed=00:49.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:32 seconds
+
+
+2026-09-22T10:25:16Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:16 +0000] Status=2, isTerminal=NO, Elapsed=00:49.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:33 seconds
+
+
+2026-09-22T10:25:17Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:17 +0000] Status=2, isTerminal=NO, Elapsed=00:51.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:34 seconds
+
+
+2026-09-22T10:25:18Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:18 +0000] Status=2, isTerminal=NO, Elapsed=00:52.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:35 seconds
+
+
+2026-09-22T10:25:19Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:19 +0000] Status=2, isTerminal=NO, Elapsed=00:53.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:36 seconds
+
+
+2026-09-22T10:25:20Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:20 +0000] Status=2, isTerminal=NO, Elapsed=00:54.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:37 seconds
+
+
+2026-09-22T10:25:21Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:21 +0000] Status=2, isTerminal=NO, Elapsed=00:54.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:38 seconds
+
+
+2026-09-22T10:25:22Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:22 +0000] Status=2, isTerminal=NO, Elapsed=00:55.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:39 seconds
+
+
+2026-09-22T10:25:23Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:23 +0000] Status=2, isTerminal=NO, Elapsed=00:57.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:40 seconds
+
+
+2026-09-22T10:25:25Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:25 +0000] Status=2, isTerminal=NO, Elapsed=00:59.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:42 seconds
+
+
+2026-09-22T10:25:25Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:25 +0000] Status=2, isTerminal=NO, Elapsed=00:59.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:43 seconds
+
+
+2026-09-22T10:25:26Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:26 +0000] Status=2, isTerminal=NO, Elapsed=00:59.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:43 seconds
+
+
+2026-09-22T10:25:27Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:27 +0000] Status=2, isTerminal=NO, Elapsed=01:00.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:44 seconds
+
+
+2026-09-22T10:25:28Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:28 +0000] Status=2, isTerminal=NO, Elapsed=01:01.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:45 seconds
+
+
+2026-09-22T10:25:29Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:29 +0000] Status=2, isTerminal=NO, Elapsed=01:02.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:46 seconds
+
+
+2026-09-22T10:25:30Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:30 +0000] Status=2, isTerminal=NO, Elapsed=01:03.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:47 seconds
+
+
+2026-09-22T10:25:31Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:31 +0000] Status=2, isTerminal=NO, Elapsed=01:04.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:48 seconds
+
+
+2026-09-22T10:25:32Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:32 +0000] Status=2, isTerminal=NO, Elapsed=01:05.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:49 seconds
+
+
+2026-09-22T10:25:33Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:33 +0000] Status=2, isTerminal=NO, Elapsed=01:06.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:50 seconds
+
+
+2026-09-22T10:25:35Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:35 +0000] Status=2, isTerminal=NO, Elapsed=01:08.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:51 seconds
+
+
+2026-09-22T10:25:35Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:35 +0000] Status=2, isTerminal=NO, Elapsed=01:09.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:52 seconds
+
+
+2026-09-22T10:25:38Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:38 +0000] Status=2, isTerminal=NO, Elapsed=01:11.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.-0LaunchServicesMigrator (00LaunchServicesMigrator.migrator, user-agnostic)
+		Migration Elapsed:00:53 seconds
+
+
+2026-09-22T10:25:39Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:39 +0000] Status=2, isTerminal=NO, Elapsed=01:13.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:00:55 seconds
+
+
+2026-09-22T10:25:41Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:41 +0000] Status=2, isTerminal=NO, Elapsed=01:14.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:00:57 seconds
+
+
+2026-09-22T10:25:42Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:42 +0000] Status=2, isTerminal=NO, Elapsed=01:15.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:00:58 seconds
+
+
+2026-09-22T10:25:43Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:43 +0000] Status=2, isTerminal=NO, Elapsed=01:16.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:00:59 seconds
+
+
+2026-09-22T10:25:44Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:44 +0000] Status=2, isTerminal=NO, Elapsed=01:18.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:00 seconds
+
+
+2026-09-22T10:25:45Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:45 +0000] Status=2, isTerminal=NO, Elapsed=01:19.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:02 seconds
+
+
+2026-09-22T10:25:46Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:46 +0000] Status=2, isTerminal=NO, Elapsed=01:19.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:03 seconds
+
+
+2026-09-22T10:25:47Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:47 +0000] Status=2, isTerminal=NO, Elapsed=01:20.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:03 seconds
+
+
+2026-09-22T10:25:48Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:48 +0000] Status=2, isTerminal=NO, Elapsed=01:21.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:04 seconds
+
+
+2026-09-22T10:25:49Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:49 +0000] Status=2, isTerminal=NO, Elapsed=01:22.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:05 seconds
+
+
+2026-09-22T10:25:49Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:49 +0000] Status=2, isTerminal=NO, Elapsed=01:22.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:06 seconds
+
+
+2026-09-22T10:25:50Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:50 +0000] Status=2, isTerminal=NO, Elapsed=01:23.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:07 seconds
+
+
+2026-09-22T10:25:51Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:51 +0000] Status=2, isTerminal=NO, Elapsed=01:24.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:08 seconds
+
+
+2026-09-22T10:25:53Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:53 +0000] Status=2, isTerminal=NO, Elapsed=01:26.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:09 seconds
+
+
+2026-09-22T10:25:53Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:53 +0000] Status=2, isTerminal=NO, Elapsed=01:26.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:10 seconds
+
+
+2026-09-22T10:25:54Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:54 +0000] Status=2, isTerminal=NO, Elapsed=01:27.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:11 seconds
+
+
+2026-09-22T10:25:55Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:55 +0000] Status=2, isTerminal=NO, Elapsed=01:28.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:12 seconds
+
+
+2026-09-22T10:25:56Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:56 +0000] Status=2, isTerminal=NO, Elapsed=01:29.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:13 seconds
+
+
+2026-09-22T10:25:57Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:57 +0000] Status=2, isTerminal=NO, Elapsed=01:30.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:14 seconds
+
+
+2026-09-22T10:25:58Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:58 +0000] Status=2, isTerminal=NO, Elapsed=01:31.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:15 seconds
+
+
+2026-09-22T10:25:59Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:25:59 +0000] Status=2, isTerminal=NO, Elapsed=01:32.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:16 seconds
+
+
+2026-09-22T10:26:00Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:26:00 +0000] Status=2, isTerminal=NO, Elapsed=01:33.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:17 seconds
+
+
+2026-09-22T10:26:01Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:26:01 +0000] Status=2, isTerminal=NO, Elapsed=01:34.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:18 seconds
+
+
+2026-09-22T10:26:02Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:26:02 +0000] Status=2, isTerminal=NO, Elapsed=01:35.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:19 seconds
+
+
+2026-09-22T10:26:03Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:26:03 +0000] Status=2, isTerminal=NO, Elapsed=01:36.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:20 seconds
+
+
+2026-09-22T10:26:07Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:26:07 +0000] Status=2, isTerminal=NO, Elapsed=01:41.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.securityd.KeychainMigrator (KeychainMigrator.migrator, user-agnostic) (Concurrent: Running plugin com.apple.appleaccount.mergebuddyprovisioningresponse.migrator (MergeBuddyProvisioningResponse.migrator, concurrent after com.apple.-0LaunchServicesMigrator))
+		Migration Elapsed:01:21 seconds
+
+
+2026-09-22T10:26:08Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:26:08 +0000] Status=2, isTerminal=NO, Elapsed=01:41.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.managedconfiguration.migrator (MCProfile.migrator, user-agnostic)
+		Migration Elapsed:01:25 seconds
+
+
+2026-09-22T10:26:09Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:26:09 +0000] Status=2, isTerminal=NO, Elapsed=01:42.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.managedconfiguration.migrator (MCProfile.migrator, user-agnostic)
+		Migration Elapsed:01:25 seconds
+
+
+2026-09-22T10:26:13Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:26:13 +0000] Status=2, isTerminal=NO, Elapsed=01:46.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.managedconfiguration.migrator (MCProfile.migrator, user-agnostic)
+		Migration Elapsed:01:26 seconds
+
+
+2026-09-22T10:26:15Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:26:15 +0000] Status=2, isTerminal=NO, Elapsed=01:48.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.managedconfiguration.migrator (MCProfile.migrator, user-agnostic)
+		Migration Elapsed:01:30 seconds
+
+
+2026-09-22T10:26:16Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:26:16 +0000] Status=2, isTerminal=NO, Elapsed=01:50.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.WebBookmarks.migrator (WebBookmarks.migrator)
+		Migration Elapsed:01:32 seconds
+
+
+2026-09-22T10:26:22Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:26:22 +0000] Status=2, isTerminal=NO, Elapsed=01:55.
+	Waiting on Data Migration
+		Reason:Running plugin com.apple.MobileSafari.migrator (MobileSafari.migrator)
+		Migration Elapsed:01:34 seconds
+
+
+2026-09-22T10:26:24Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] [2026-09-22 10:26:24 +0000] Status=4294967295, isTerminal=YES, Elapsed=01:58.
+	Finished
+
+
+2026-09-22T10:26:24Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] Exit 0
+2026-09-22T10:26:24Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] TIMING boot-and-readiness: 118.969435583 seconds
+2026-09-22T10:26:26Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] Installing acceptance fixture (up to 300 seconds)…
+2026-09-22T10:26:26Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] /usr/bin/xcrun simctl --set /private/tmp/SwiftSimSlim-safety-20260922-c/Devices install FD8EC1CA-FDF4-46D5-AD4D-219DF550564A /Users/volodymyr/Library/Developer/Xcode/DerivedData/SwiftSimSlim-bgsryetpynzzhecuabxewvaqmopt/Build/Products/Debug-iphonesimulator/AcceptanceFixture.app

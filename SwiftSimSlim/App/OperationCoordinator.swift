@@ -8,6 +8,7 @@ import Observation
 final class OperationCoordinator {
   struct Ticket: Sendable, Equatable, Identifiable {
     let id = UUID()
+    let reservedAt = ContinuousClock.now
     let device: SimulatorDevice
     let action: SimulatorAction
   }
@@ -119,6 +120,7 @@ struct ServiceProfileSnapshot: Sendable, Equatable {
   let labels: Set<String>
   let preserveBootState: Bool
   let disabledCount: Int
+  var reviewedStates: [String: Set<String>] = [:]
 
   init(categories: Set<String>, labels: Set<String>, preserveBootState: Bool) throws {
     self.categories = categories
@@ -130,6 +132,8 @@ struct ServiceProfileSnapshot: Sendable, Equatable {
 
 enum SimulatorAction: Sendable, Equatable {
   case slim(ServiceProfileSnapshot)
+  case preview(ServiceProfileSnapshot)
+  case restoreSaved(ServiceStateBackup)
   case restore(preserveBootState: Bool)
   case clean(categories: Set<String>, preserveBootState: Bool)
   case boot, shutdown, erase, delete, measure, analyze
@@ -147,6 +151,8 @@ enum SimulatorAction: Sendable, Equatable {
   var title: String {
     switch self {
     case .slim: "Applying service profile…"
+    case .preview: "Previewing service changes…"
+    case .restoreSaved: "Restoring saved state…"
     case .restore: "Restoring services…"
     case .clean: "Cleaning disk data…"
     case .boot: "Booting simulator…"

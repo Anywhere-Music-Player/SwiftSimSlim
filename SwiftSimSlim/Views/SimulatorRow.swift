@@ -118,10 +118,14 @@ struct SimulatorRow: View {
             }
 
             Button {
-              Task { await model.restoreOriginalServices(for: device) }
+              managementSheet = .servicePreview([device], unslim: true)
             } label: {
               Label("Unslim Simulator", systemImage: "plus.circle")
             }
+            Button("Preview Service Changes…") {
+              managementSheet = .servicePreview([device], unslim: false)
+            }
+            SavedStateActions(device: device)
           }
           .disabled(model.isOperating(device))
 

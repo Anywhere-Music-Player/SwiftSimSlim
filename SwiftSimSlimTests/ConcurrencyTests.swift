@@ -103,11 +103,19 @@ private actor ParallelSimulator {
   var failedBoots: Set<String> = []
   var nextListGate: Gate?
   var heldLists = 0
+  var failedService: (String, String)?
+  var serviceCalls: [String: Int] = [:]
+  var serviceGate: Gate?
+  var enteredServiceDevices: Set<String> = []
   init(_ fixtures: [SimulatorDevice]) {
     devices = Dictionary(uniqueKeysWithValues: fixtures.map { ($0.udid, $0) })
     states = Dictionary(uniqueKeysWithValues: fixtures.map { ($0.udid, $0.state) })
   }
   func writeOverrides(_ id: String, _ desired: Set<String>) { disabled[id] = desired }
+  func failService(_ id: String, _ label: String, gate: Gate) {
+    failedService = (id, label)
+    serviceGate = gate
+  }
   func holdRename(_ id: String, gate: Gate) { renameGates[id] = gate }
   func holdBoot(_ id: String, gate: Gate, fail: Bool = false) {
     bootGates[id] = gate
@@ -139,6 +147,15 @@ private actor ParallelSimulator {
       return .init(data: data, errorData: Data(), status: 0)
     }
     if let id = args.first(where: { devices[$0] != nil }) {
+      if args.contains("disable"), let label = args.last {
+        let key = id + ":" + String(label.dropFirst(7))
+        serviceCalls[key, default: 0] += 1
+        enteredServiceDevices.insert(id)
+        if let serviceGate { await serviceGate.wait() }
+        if let failedService, failedService.0 == id, label == "system/" + failedService.1 {
+          throw SimulatorError("Injected mid-batch failure")
+        }
+      }
       if args.contains("rename"), let gate = renameGates[id] { await gate.wait() }
       if args.contains("delete") {
         devices.removeValue(forKey: id)
@@ -174,6 +191,9 @@ private func model(_ fake: ParallelSimulator) -> AppModel {
     runner: CommandRunner(executor: { try await fake.execute($0, $1) }),
     defaults: UserDefaults(suiteName: "SwiftSimSlim-Concurrency-\(UUID())")!,
     automaticallyMeasureDisk: false,
+    backupStore: ServiceBackupStore(
+      directory: FileManager.default.temporaryDirectory.appendingPathComponent(
+        "SwiftSimSlim-fixture-\(UUID())")),
     writeOverrides: { await fake.writeOverrides($0, $1) })
 }
 
@@ -342,4 +362,60 @@ private func model(_ fake: ParallelSimulator) -> AppModel {
   #expect(app.diskAnalysisRequestID != before)
   app.operations.finish(mutation)
   #expect(app.diskAnalysisRequestID == before)
+}
+
+@Test @MainActor func concurrentProfilesIsolateMidBatchFailureRetryAndSavedRestore() async throws {
+  let a = device(1, booted: true)
+  let b = device(2, booted: true)
+  let fake = ParallelSimulator([a, b])
+  let labels = Array(ServiceCatalog.slimmable.sorted().prefix(14))
+  let desired = Set(labels.dropFirst())
+  let gate = Gate()
+  defer { Task { await gate.release() } }
+  await fake.writeOverrides(a.udid, [labels[0]])
+  await fake.writeOverrides(b.udid, [labels[0]])
+  await fake.failService(a.udid, labels[8], gate: gate)
+  let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+  defer { try? FileManager.default.removeItem(at: root) }
+  let app = AppModel(
+    deviceSets: ["/synthetic-test-set"],
+    runner: CommandRunner(executor: { try await fake.execute($0, $1) }),
+    defaults: UserDefaults(suiteName: "SwiftSimSlim-Failure-\(UUID())")!,
+    automaticallyMeasureDisk: false,
+    backupStore: ServiceBackupStore(directory: root),
+    writeOverrides: { _, _ in throw SimulatorError("Force command fallback") })
+  await app.load()
+  app.keptServiceLabels = ServiceCatalog.slimmable.subtracting(desired)
+  let apply = Task { await app.applyProfile(to: [a, b]) }
+  #expect(await eventually { await fake.enteredServiceDevices.count == 2 })
+  #expect(app.operations.runningCount == 2)
+  await gate.release()
+  await apply.value
+  #expect(app.operations.entries.isEmpty)
+  #expect(app.batches.isEmpty)
+  #expect(await fake.disabled[a.udid] == desired.subtracting([labels[8]]))
+  #expect(await fake.disabled[b.udid] == desired)
+  #expect(app.serviceBackups[a.udid]?.disabled == [labels[0]])
+  #expect(app.serviceBackups[b.udid]?.disabled == [labels[0]])
+  let calls = await fake.serviceCalls
+  #expect(calls[a.udid + ":" + labels[8]] == 3)
+  #expect(calls.filter { $0.key != a.udid + ":" + labels[8] }.values.allSatisfy { $0 == 1 })
+  #expect(
+    await eventually {
+      app.commandLog.contains { $0.contains(a.udid) && $0.contains("FAILED disable " + labels[8]) }
+    })
+  #expect(
+    app.commandLog.contains { $0.contains(a.udid) && $0.contains("Retrying 1 failed services") })
+  #expect(app.commandLog.contains { $0.contains(b.udid) && $0.contains("VERIFIED disabled") })
+  #expect(!app.commandLog.contains { $0.contains(b.udid) && $0.contains("FAILED disable") })
+  await app.restoreSavedState(for: a)
+  #expect(await fake.disabled[a.udid] == [labels[0]])
+  #expect(await fake.disabled[b.udid] == desired)
+  #expect(await fake.states[a.udid] == "Booted")
+  #expect(
+    await eventually {
+      app.commandLog.contains { $0.contains(a.udid) && $0.contains("RESTORED and verified saved") }
+    })
+  #expect(app.commandLog.contains { $0.contains("TIMING service-commands-only") })
+  #expect(app.commandLog.contains { $0.contains("TIMING profile-total") })
 }

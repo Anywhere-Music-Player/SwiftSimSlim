@@ -100,6 +100,8 @@ struct SwiftSimSlimBackend: Sendable {
   }
 
   func disabled(_ device: RawDevice, log: Bool = false) async throws -> Set<String> {
+    let start = ContinuousClock.now
+    defer { if log { timing("service-state-read", start, device.udid) } }
     let output = try await simctl(
       device, ["spawn", device.udid, "launchctl", "print-disabled", "system"], log: log)
     if output.text == "disabled services = (no disabled services)" { return [] }
@@ -135,6 +137,8 @@ struct SwiftSimSlimBackend: Sendable {
   func diskCleanupCategories() async throws -> [DiskCleanupCategory] { DiskStore.categories }
 
   func bootAndWait(_ device: RawDevice) async throws {
+    let start = ContinuousClock.now
+    defer { timing("boot-and-readiness", start, device.udid) }
     stage("Booting simulator…", device)
     do { try await simctl(device, ["boot", device.udid]) } catch {
       let current = try await find(device.udid, set: device.set)
@@ -144,6 +148,8 @@ struct SwiftSimSlimBackend: Sendable {
   }
 
   func stop(_ device: RawDevice) async throws {
+    let start = ContinuousClock.now
+    defer { timing("shutdown", start, device.udid) }
     stage("Shutting down…", device)
     do { try await simctl(device, ["shutdown", device.udid], timeout: 30) } catch {
       let current = try await find(device.udid, set: device.set)
@@ -265,6 +271,8 @@ struct SwiftSimSlimBackend: Sendable {
       try Task.checkCancellation()
       var wroteOverrides = false
       do {
+        let start = ContinuousClock.now
+        defer { timing("offline-override-write", start, device.udid) }
         stage("Applying service profile while shut down…", device)
         try await writeOverrides(device.udid, desired)
         wroteOverrides = true
@@ -304,6 +312,17 @@ struct SwiftSimSlimBackend: Sendable {
 }
 
 enum DisabledStore {
+  static func read(udid: String, root: URL = URL(fileURLWithPath: "/private/var/tmp")) throws
+    -> Set<String>
+  {
+    let target = try url(udid: udid, root: root)
+    guard FileManager.default.fileExists(atPath: target.path) else { return [] }
+    guard
+      let entries = try PropertyListSerialization.propertyList(
+        from: Data(contentsOf: target), format: nil) as? [String: Bool]
+    else { throw SimulatorError("Unexpected launchd overrides format.") }
+    return Set(entries.filter(\.value).map(\.key))
+  }
   static func url(udid: String, root: URL = URL(fileURLWithPath: "/private/var/tmp")) throws -> URL
   {
     guard UUID(uuidString: udid) != nil else { throw SimulatorError("Invalid simulator UUID.") }

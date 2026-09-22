@@ -3,6 +3,7 @@ import SwiftUI
 enum SimulatorManagementSheet: Identifiable {
   case clone(SimulatorDevice)
   case slimmingRecommendation([SimulatorDevice])
+  case servicePreview([SimulatorDevice], unslim: Bool)
   case rename(SimulatorDevice)
   case erase([SimulatorDevice])
   case delete([SimulatorDevice])
@@ -10,6 +11,8 @@ enum SimulatorManagementSheet: Identifiable {
 
   var id: String {
     switch self {
+    case .servicePreview(let devices, let unslim):
+      return "service-preview-\(unslim)-" + devices.map(\.udid).joined(separator: ",")
     case .clone(let device): return "clone-\(device.udid)"
     case .slimmingRecommendation(let devices):
       return "slimming-recommendation-" + devices.map(\.udid).joined(separator: ",")

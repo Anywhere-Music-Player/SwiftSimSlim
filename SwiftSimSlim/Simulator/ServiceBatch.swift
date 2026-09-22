@@ -19,6 +19,8 @@ extension SwiftSimSlimBackend {
       Set(enable).isSubset(of: ServiceCatalog.managed),
       Set(disable).isDisjoint(with: enable)
     else { throw SimulatorError("Invalid service transition batch.") }
+    let start = ContinuousClock.now
+    defer { timing("service-commands-only (including retries)", start, device.udid) }
     let deadline = ContinuousClock.now + .seconds(600)
     var pending =
       Set(disable).sorted().map { ServiceTransition(action: "disable", label: $0) }
@@ -44,9 +46,18 @@ extension SwiftSimSlimBackend {
         while let (change, failure) = try await group.next() {
           try Task.checkCancellation()
           if let failure {
+            runner.report(
+              .init(
+                kind: .output, udid: device.udid,
+                message:
+                  "FAILED \(change.action) \(change.label) attempt \(attempt + 1): \(failure)"))
             lastFailure = "\(change.label): \(failure)"
             failed.append(change)
           } else {
+            runner.report(
+              .init(
+                kind: .output, udid: device.udid,
+                message: "APPLIED \(change.action) \(change.label) attempt \(attempt + 1)"))
             completed += 1
           }
           let suffix = attempt == 0 ? "" : " · retry \(attempt)/2"

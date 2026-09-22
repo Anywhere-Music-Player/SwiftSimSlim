@@ -8,7 +8,7 @@ final class WindowPersistenceTests: XCTestCase {
     let app = XCUIApplication()
     // Match a normal launch: XCTest otherwise suppresses saved window state.
     app.launchArguments = ["-ApplePersistenceIgnoreState", "NO"]
-    app.launchEnvironment["SWIFTSIMSLIM_UNIT_TESTS"] = "1"
+    app.launchEnvironment["SWIFTSIMSLIM_EMPTY_UI_TEST"] = "1"
     defer { app.terminate() }
     app.terminate()
     app.launch()

@@ -1,0 +1,49 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -xctestrun /private/tmp/SwiftSimSlim-safety-run.xctestrun -destination platform=macOS,arch=arm64 "-only-testing:SwiftSimSlimTests/isolatedServiceSafetyMatrix()" -resultBundlePath /private/tmp/SwiftSimSlim-safety-20260922-c.xcresult
+
+Writing result bundle at path:
+	/private/tmp/SwiftSimSlim-safety-20260922-c.xcresult
+
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, id:00006000-000808AE3438801E, name:My Mac }
+{ platform:macOS, arch:arm64, variant:Mac Catalyst, id:00006000-000808AE3438801E, name:My Mac }
+{ platform:macOS, arch:arm64, variant:DriverKit, id:00006000-000808AE3438801E, name:My Mac }
+{ platform:macOS, arch:arm64, variant:Designed for [iPad,iPhone], id:00006000-000808AE3438801E, name:My Mac }
+2026-09-22 13:24:20.879852+0300 SwiftSimSlim[7763:603698] [Connection] Unable to get synchronousRemoteObjectProxy, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-09-22 13:24:20.886641+0300 SwiftSimSlim[7763:603698] [Application] Error registering app with intents framework: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-09-22 13:24:20.886435+0300 SwiftSimSlim[7763:603685] [Connection] Unable to get synchronousRemoteObjectProxy, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-09-22 13:24:20.887759+0300 SwiftSimSlim[7763:603685] [Connection] Unable to re-register with Process Instance Registry, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-09-22 13:24:20.891083+0300 SwiftSimSlim[7763:603722] [Connection] Unable to get synchronousRemoteObjectProxy, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-09-22 13:24:20.893352+0300 SwiftSimSlim[7763:603722] [Connection] Unable to re-register with Process Instance Registry, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-09-22 13:24:20.896223+0300 SwiftSimSlim[7763:603684] [Connection] Unable to get synchronousRemoteObjectProxy, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-09-22 13:24:20.896327+0300 SwiftSimSlim[7763:603684] [Connection] Unable to re-register with Process Instance Registry, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-09-22 13:24:20.898075+0300 SwiftSimSlim[7763:603684] [Connection] Will NOT re-try to establish the connection
+2026-09-22 13:24:20.898240+0300 SwiftSimSlim[7763:603685] [Connection] Unable to get synchronousRemoteObjectProxy, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-09-22 13:24:20.898724+0300 SwiftSimSlim[7763:603685] [Connection] Unable to re-register with Process Instance Registry, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-09-22 13:24:23.102989+0300 SwiftSimSlim[7763:603685] [Common] Unable to obtain a task name port right for pid 439: (os/kern) failure (0x5)
+Test Suite 'Selected tests' started at 2026-09-22 13:24:24.503.
+Test Suite 'SwiftSimSlimTests.xctest' started at 2026-09-22 13:24:24.504.
+Test Suite 'SwiftSimSlimTests.xctest' passed at 2026-09-22 13:24:24.504.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-09-22 13:24:24.504.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+􀟈 Test run started.
+􀄵 Testing Library Version: 2084
+􀄵 Target Platform: arm64e-apple-macos14.0
+􀟈 Test isolatedServiceSafetyMatrix() started.
+2026-09-22T10:24:25Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] Booting simulator…
+2026-09-22T10:26:26Z [FD8EC1CA-FDF4-46D5-AD4D-219DF550564A] Installing acceptance fixture (up to 300 seconds)…
+2026-09-22 13:26:33.020138+0300 SwiftSimSlim[7763:603630] [CursorUI] ViewBridge to RemoteViewService Terminated: Error Domain=com.apple.ViewBridge.error Code=18 "(null)" UserInfo={com.apple.ViewBridge.error.hint=this process disconnected remote view controller -- benign unless unexpected, com.apple.ViewBridge.error.description=NSViewBridgeErrorCanceled}
+2026-09-22 13:26:49.052 xcodebuild[7678:602855] [MT] IDETestOperationsObserverDebug: 149.369 elapsed -- Testing started completed.
+2026-09-22 13:26:49.093 xcodebuild[7678:602855] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-09-22 13:26:49.093 xcodebuild[7678:602855] [MT] IDETestOperationsObserverDebug: 149.369 sec, +149.369 sec -- end
+
+Test session results, code coverage, and logs:
+	/tmp/SwiftSimSlim-safety-20260922-c.xcresult
+
+Failing tests:
+	isolatedServiceSafetyMatrix()
+
+** TEST EXECUTE FAILED **
+
+Testing started
