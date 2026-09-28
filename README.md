@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="SwiftSimSlim/Resources/AppIcon.icon/Assets/ChatGPT%20Image%20Sep%2020,%202026%20at%2011_15_54%20PM.png" alt="SwiftSimSlim app icon" width="144" height="144">
+  <img src="SwiftSimSlim/Resources/AppIcon.icon/Assets/Icon.png" alt="SwiftSimSlim app icon" width="144" height="144">
   <h1>SwiftSimSlim</h1>
   <p>A native macOS app for managing and slimming iOS simulators.</p>
   <p>
@@ -48,7 +48,7 @@ cd SwiftSimSlim
 open SwiftSimSlim.xcodeproj
 ```
 
-In Xcode, select **SwiftSimSlim → My Mac**, then press **Cmd-R** to build and launch. This README describes the current branch; features added after 26.0 require building the current source.
+In Xcode, select **SwiftSimSlim → My Mac**, then press **Cmd-R** to build and launch. The 26.0.1 source release includes the features described below.
 
 ### Apply your first profile
 
