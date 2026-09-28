@@ -40,7 +40,7 @@ SwiftSimSlim calls Apple’s `simctl` directly, with an in-process Swift backend
 
 You need a Mac with Xcode and its simulator tools, plus an installed iOS Simulator runtime. **Persistent slimming requires iOS 18.5 or later.** The project uses Swift 6 and an Icon Composer app icon; use Xcode capable of opening those project resources. See the [verification matrix](#safety-and-test-matrix) for the recorded environment and its limits.
 
-The published **26.0** release provides source archives, with no prebuilt app attached. You can [download the release source](https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases/latest) or clone the current development version:
+The published **26.0.1** release provides source archives, with no prebuilt app attached. You can [download the release source](https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases/latest) or clone the current development version:
 
 ```sh
 git clone https://github.com/Anywhere-Music-Player/SwiftSimSlim.git
