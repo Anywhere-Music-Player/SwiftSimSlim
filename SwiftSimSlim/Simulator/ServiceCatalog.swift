@@ -9,8 +9,12 @@ enum ServiceCatalog {
       downside:
         "Home and Lock Screen widgets, wallpaper posters, and Live Activities stop updating.",
       approxMemoryMB: 675,
-      labels: ["com.apple.PosterBoard", "com.apple.chronod", "com.apple.liveactivitiesd"],
+      labels: [
+        "com.apple.PosterBoard", "com.apple.chronod", "com.apple.liveactivitiesd", "com.apple.navd",
+      ],
       serviceDescriptions: [
+        "com.apple.navd":
+          "Supports the Maps widget without repeated navigation connection failures.",
         "com.apple.PosterBoard": "Renders Home and Lock Screen wallpaper scenes.",
         "com.apple.chronod": "Refreshes widgets and complications on schedule.",
         "com.apple.liveactivitiesd": "Updates Live Activities and Dynamic Island content.",
@@ -21,7 +25,7 @@ enum ServiceCatalog {
       downside: "Siri, speech features, and Apple Intelligence services are unavailable.",
       approxMemoryMB: 265,
       labels: [
-        "com.apple.assistantd", "com.apple.assistant_cdmd", "com.apple.assistant_service",
+        "com.apple.assistant_cdmd", "com.apple.assistant_service",
         "com.apple.siriactionsd", "com.apple.siriinferenced", "com.apple.siriknowledged",
         "com.apple.sirittsd", "com.apple.siri.context.service", "com.apple.siri.acousticsignature",
         "com.apple.corespeechd", "com.apple.voiced", "com.apple.voicebankingd",
@@ -63,7 +67,12 @@ enum ServiceCatalog {
         "com.apple.textunderstandingd": "Extracts meaning and entities from text.",
         "com.apple.voicebankingd": "Supports Personal Voice and voice banking.",
         "com.apple.voiced": "Manages system voices and speech assets.",
-      ], alwaysEnabled: []),
+      ],
+      alwaysEnabled: [
+        .init(
+          label: "com.apple.assistantd",
+          reason: "Hosts dictation; required to prevent Spotlight from leaking memory.")
+      ]),
     .init(
       id: "search", name: "Spotlight & Search",
       description: "On-device Spotlight and in-Settings search services.",
@@ -269,7 +278,7 @@ enum ServiceCatalog {
         "com.apple.newsd", "com.apple.weatherd", "com.apple.Maps.mapssyncd",
         "com.apple.Maps.mapspushd", "com.apple.Maps.geocorrectiond", "com.apple.maps.destinationd",
         "com.apple.MapKit.SnapshotService", "com.apple.jetpackassetd", "com.apple.tipsd",
-        "com.apple.gamed", "com.apple.gamesaved", "com.apple.GameController.gamecontrollerd",
+        "com.apple.gamesaved", "com.apple.GameController.gamecontrollerd",
       ],
       serviceDescriptions: [
         "com.apple.GameController.gamecontrollerd": "Discovers controllers and routes their input.",
@@ -284,7 +293,12 @@ enum ServiceCatalog {
         "com.apple.newsd": "Downloads and refreshes Apple News content.",
         "com.apple.tipsd": "Selects and refreshes content for the Tips app.",
         "com.apple.weatherd": "Fetches forecasts and weather data.",
-      ], alwaysEnabled: []),
+      ],
+      alwaysEnabled: [
+        .init(
+          label: "com.apple.gamed",
+          reason: "Required for timely XCUITest app launches (DTServiceHub / GameKit).")
+      ]),
     .init(
       id: "messaging", name: "Messaging & FaceTime",
       description: "iMessage, FaceTime, call, and identity services.",
@@ -392,7 +406,7 @@ enum ServiceCatalog {
   static let compatibility = Set(categories.flatMap { $0.alwaysEnabledServices.map(\.label) })
   static let managed = slimmable.union(compatibility)
   static func desired(except: Set<String>, keep: Set<String>) throws -> Set<String> {
-    guard except.isSubset(of: Set(categories.map(\.id))), keep.isSubset(of: slimmable) else {
+    guard except.isSubset(of: Set(categories.map(\.id))), keep.isSubset(of: managed) else {
       throw SimulatorError("Unknown service or category in the selected profile.")
     }
     let retained = categories.filter { except.contains($0.id) }.flatMap(\.labels)

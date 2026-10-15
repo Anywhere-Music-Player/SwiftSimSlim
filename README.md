@@ -40,7 +40,7 @@ SwiftSimSlim calls Apple’s `simctl` directly, with an in-process Swift backend
 
 You need a Mac with Xcode and its simulator tools, plus an installed iOS Simulator runtime. **Persistent slimming requires iOS 18.5 or later.** The project uses Swift 6 and an Icon Composer app icon; use Xcode capable of opening those project resources. See the [verification matrix](#safety-and-test-matrix) for the recorded environment and its limits.
 
-The published **26.0.1** release provides source archives, with no prebuilt app attached. You can [download the release source](https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases/latest) or clone the current development version:
+The published **26.0.2** release provides source archives, with no prebuilt app attached. You can [download the release source](https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases/latest) or clone the current development version:
 
 ```sh
 git clone https://github.com/Anywhere-Music-Player/SwiftSimSlim.git
@@ -48,7 +48,7 @@ cd SwiftSimSlim
 open SwiftSimSlim.xcodeproj
 ```
 
-In Xcode, select **SwiftSimSlim → My Mac**, then press **Cmd-R** to build and launch. The 26.0.1 source release includes the features described below.
+In Xcode, select **SwiftSimSlim → My Mac**, then press **Cmd-R** to build and launch. The 26.0.2 source release includes the features described below.
 
 ### Apply your first profile
 
@@ -88,7 +88,7 @@ Swift does not make Apple’s simulator commands intrinsically faster. The speed
 | Apply an unchanged profile | Boot/readiness handling before checking the profile | Check a booted device first; skip boot and restart |
 | Other devices during an operation | Mutation controls share a global busy state | Separate device reservations and progress; two heavy operations at a time |
 
-The comparison refers to [simslim at `4ae1659`](https://github.com/MobAI-App/simslim/tree/4ae1659a0c0265787c2a7047fab466b326ba6d7e). The offline optimization originated upstream; SwiftSimSlim extends it to operations started on a booted device. These scheduling changes can also be implemented in Go.
+The comparison refers to [simslim at `4ae1659`](https://github.com/MobAI-App/simslim/tree/4ae1659a0c0265787c2a7047fab466b326ba6d7e). Upstream subsequently merged the booted-device offline optimization and parallel service transitions in [PR #51](https://github.com/MobAI-App/simslim/pull/51). The table and timings below describe the historical snapshot, not current upstream performance.
 
 ## How slimming avoids unnecessary work
 

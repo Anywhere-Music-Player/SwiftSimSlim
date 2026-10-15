@@ -352,3 +352,23 @@ actor FakeSimulator {
     udid: UUID().uuidString, name: "Fresh", state: "Booted", isAvailable: true, dataPath: nil)
   #expect(try await backend.disabled(device).isEmpty)
 }
+
+@Test func upstreamCompatibilityServicesRepairLegacyProfiles() throws {
+  let required: Set<String> = ["com.apple.assistantd", "com.apple.gamed"]
+  let desired = try ServiceCatalog.desired(except: [], keep: required)
+  #expect(required.isSubset(of: ServiceCatalog.compatibility))
+  #expect(required.isDisjoint(with: ServiceCatalog.slimmable))
+  let delta = ServiceCatalog.delta(current: required.union(["unmanaged"]), desired: desired)
+  #expect(Set(delta.enable) == required)
+  #expect(Set(delta.disable).isDisjoint(with: required))
+  #expect(desired.isSuperset(of: ["com.apple.assistant_service", "com.apple.gamesaved"]))
+}
+
+@Test func retainedWidgetsKeepNavigationEvenWhenConnectivityIsSlimmed() throws {
+  let full = try ServiceCatalog.desired(except: [], keep: [])
+  let widgets = try ServiceCatalog.desired(except: ["widgets"], keep: [])
+  #expect(full.contains("com.apple.navd"))
+  #expect(!widgets.contains("com.apple.navd"))
+  let delta = ServiceCatalog.delta(current: full, desired: widgets)
+  #expect(delta.enable.contains("com.apple.navd"))
+}
