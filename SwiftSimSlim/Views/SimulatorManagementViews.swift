@@ -1,6 +1,8 @@
 import SwiftUI
 
 enum SimulatorManagementSheet: Identifiable {
+  case fullSlimAndClean([SimulatorDevice])
+  case appStorage(SimulatorDevice)
   case clone(SimulatorDevice)
   case slimmingRecommendation([SimulatorDevice])
   case servicePreview([SimulatorDevice], unslim: Bool)
@@ -11,6 +13,9 @@ enum SimulatorManagementSheet: Identifiable {
 
   var id: String {
     switch self {
+    case .fullSlimAndClean(let devices):
+      return "full-slim-clean-" + devices.map(\.udid).joined(separator: ",")
+    case .appStorage(let device): return "app-storage-" + device.udid
     case .servicePreview(let devices, let unslim):
       return "service-preview-\(unslim)-" + devices.map(\.udid).joined(separator: ",")
     case .clone(let device): return "clone-\(device.udid)"
@@ -319,7 +324,9 @@ struct SimulatorDestructiveSheet: View {
           dismiss()
           onConfirm()
         }
-        .keyboardShortcut(.defaultAction)
+        .buttonStyle(.borderedProminent)
+        .tint(.red)
+        .fontWeight(.bold)
       }
     }
     .padding(24)
@@ -330,7 +337,6 @@ struct SimulatorDestructiveSheet: View {
 struct DiskCleanupConfirmationSheet: View {
   @Environment(\.dismiss) private var dismiss
   @Environment(AppModel.self) private var model
-  @State private var confirmationText = ""
 
   let devices: [SimulatorDevice]
   let categories: [DiskCleanupCategory]
@@ -346,10 +352,6 @@ struct DiskCleanupConfirmationSheet: View {
 
   private var estimatedSizeText: String {
     ByteCountFormatter.string(fromByteCount: estimatedBytes, countStyle: .file)
-  }
-
-  private var isConfirmed: Bool {
-    confirmationText.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == "CLEAN"
   }
 
   var body: some View {
@@ -433,13 +435,6 @@ struct DiskCleanupConfirmationSheet: View {
       .padding(12)
       .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
 
-      VStack(alignment: .leading, spacing: 6) {
-        Text("Type CLEAN to continue")
-          .font(.subheadline.weight(.semibold))
-        TextField("CLEAN", text: $confirmationText)
-          .textFieldStyle(.roundedBorder)
-      }
-
       HStack {
         Spacer()
         Button("Cancel", role: .cancel) { dismiss() }
@@ -449,7 +444,9 @@ struct DiskCleanupConfirmationSheet: View {
           dismiss()
           onConfirm(categoryIDs)
         }
-        .disabled(!isConfirmed)
+        .buttonStyle(.borderedProminent)
+        .tint(.red)
+        .fontWeight(.bold)
       }
     }
     .padding(24)
@@ -463,3 +460,15 @@ struct DiskCleanupConfirmationSheet: View {
     return ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
   }
 }
+
+#if DEBUG
+  #Preview("Disk cleanup confirmation") {
+    let model = AppModel.preview()
+    DiskCleanupConfirmationSheet(
+      devices: Array(model.devices.prefix(1)),
+      categories: DiskStore.categories.filter { $0.defaultSelected },
+      onClone: { _ in }, onConfirm: { _ in }
+    )
+    .environment(model)
+  }
+#endif

@@ -102,10 +102,13 @@ struct SimulatorDiskStorageMeasurement: Sendable, Decodable, Identifiable, Equat
 
   var systemImage: String {
     switch id {
-    case "installed-apps": return "app.dashed"
+    case "installed-apps", "apps-and-data": return "app.dashed"
     case "documents": return "doc"
     case "app-data": return "externaldrive"
     case "user-media": return "photo.on.rectangle"
+    case "wallpapers": return "photo"
+    case "system-assets": return "shippingbox"
+    case "other-system-data": return "gearshape"
     default: return "folder"
     }
   }
@@ -178,6 +181,7 @@ struct BatchProgress: Identifiable, Equatable {
   var completed = 0
   let total: Int
   let action: String
+  var isDiskAnalysis = false
   var fraction: Double { total == 0 ? 0 : Double(completed) / Double(total) }
 }
 

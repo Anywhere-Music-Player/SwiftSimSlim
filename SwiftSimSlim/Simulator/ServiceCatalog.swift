@@ -75,15 +75,18 @@ enum ServiceCatalog {
       ]),
     .init(
       id: "search", name: "Spotlight & Search",
-      description: "On-device Spotlight and in-Settings search services.",
-      downside: "Spotlight and Settings search return no results.", approxMemoryMB: 50,
+      description: "Spotlight, Settings search, and Recents in Files and document pickers.",
+      downside:
+        "Spotlight and Settings search return no results. Recents in Files and document pickers shows Content Unavailable.",
+      approxMemoryMB: 50,
       labels: [
         "com.apple.searchd", "com.apple.searchtoold", "com.apple.spotlightknowledged",
         "com.apple.spotlightknowledged.updater", "com.apple.corespotlightservice",
       ],
       serviceDescriptions: [
         "com.apple.corespotlightservice": "Indexes and searches app-provided content.",
-        "com.apple.searchd": "Coordinates system search queries.",
+        "com.apple.searchd":
+          "Serves system search queries and Recents in Files and document pickers.",
         "com.apple.searchtoold": "Runs helper tasks for system search.",
         "com.apple.spotlightknowledged": "Builds knowledge used by Spotlight results.",
         "com.apple.spotlightknowledged.updater": "Refreshes Spotlight's knowledge data.",

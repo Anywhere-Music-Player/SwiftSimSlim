@@ -28,13 +28,36 @@ enum DiskStore {
       recovery: "iOS downloads the package again when needed.", risk: "Restored on demand",
       defaultSelected: false, canClean: true),
     .init(
-      id: "required-siri-assets", name: "Required Siri Assets",
-      description: "Siri, speech, voice, and accessibility downloads restored by iOS.",
-      downside: "Manual deletion is unsupported.", recovery: "Required assets return after boot.",
-      risk: "System managed", defaultSelected: false, canClean: false),
+      id: "wallpaper-cache", name: "Wallpaper & Poster Cache",
+      description: "Generated wallpaper and Lock Screen snapshot caches.",
+      downside: "Wallpaper previews may temporarily disappear or load more slowly.",
+      recovery:
+        "iOS may regenerate snapshots; the cache can grow again. Originals and settings are kept.",
+      risk: "Optional cleanup", defaultSelected: false, canClean: true),
+    .init(
+      id: "required-siri-assets", name: "Downloaded Siri & Speech Assets",
+      description: "Known per-simulator Siri and system speech asset catalogs.",
+      downside: "Siri, dictation, and system voices may be unavailable until assets return.",
+      recovery: "iOS may restore these downloads after boot, even when Siri services are disabled.",
+      risk: "Experimental cleanup", defaultSelected: false, canClean: true),
+    .init(
+      id: "system-models", name: "Other Downloaded System Models",
+      description: "Known Search, suggestions, handwriting, motion, and other model catalogs.",
+      downside: "Features using these models may stop working until iOS restores them.",
+      recovery: "Downloads may return after boot. Unknown catalogs and custom voices are kept.",
+      risk: "Experimental cleanup", defaultSelected: false, canClean: true),
+    .init(
+      id: "intelligence-data", name: "System Intelligence History & Indexes",
+      description: "IntelligencePlatform, Biome, and DuetExpertCenter data only.",
+      downside:
+        "Deletes learned suggestions and system activity history. Personalization is reset.",
+      recovery:
+        "Services may rebuild indexes and collect new history. Deleted history cannot be restored.",
+      risk: "Resets personalization", defaultSelected: false, canClean: true),
   ]
   static let protectedNames: Set<String> = [
-    "Documents", "Mobile Documents", "Media", "MobileAsset",
+    "Documents", "Mobile Documents", "Media", "MobileAsset", "PRBPosterExtensionDataStore",
+    "IntelligencePlatform", "Biome", "DuetExpertCenter",
   ]
   static var fm: FileManager { FileManager.default }
 
@@ -99,6 +122,7 @@ enum DiskStore {
   }
   static func compact(_ root: URL, _ candidates: [URL]) throws -> [URL] {
     var result: [URL] = []
+    var resultPaths: [String] = []
     for candidate in Set(candidates.map(\.standardizedFileURL)).sorted(by: {
       $0.path.count < $1.path.count
     }) {
@@ -111,8 +135,10 @@ enum DiskStore {
       }
       guard isDirectory(data) else { continue }
       try requireDescendant(root, candidate)
-      if !result.contains(where: { contains($0, candidate, allowRoot: true) }) {
+      let path = candidate.path
+      if !resultPaths.contains(where: { path == $0 || path.hasPrefix($0 + "/") }) {
         result.append(candidate)
+        resultPaths.append(path)
       }
     }
     return result
@@ -147,23 +173,73 @@ enum DiskStore {
     case "linguistic-data":
       candidates = [
         root.appendingPathComponent(
-          "private/var/MobileAsset/AssetsV2/com_apple_MobileAsset_LinguisticData")
+          "private/var/MobileAsset/AssetsV2/com_apple_MobileAsset_LinguisticData"),
+        root.appendingPathComponent(
+          "private/var/MobileAsset/AssetsV2/com_apple_MobileAsset_UAF_LinguisticData"),
       ]
+    case "system-models":
+      candidates = [
+        "com_apple_MobileAsset_UAF_SearchQueryUnderstanding",
+        "com_apple_MobileAsset_UAF_SearchQueryUnderstandingOverrides",
+        "com_apple_MobileAsset_CoreSuggestions", "com_apple_MobileAsset_CoreSuggestionsModels",
+        "com_apple_MobileAsset_UAF_Handwriting_Synthesis",
+        "com_apple_MobileAsset_UAF_MotionAnomalyFM",
+        "com_apple_MobileAsset_UAF_CoreMotion_IMUFoundationModel",
+        "com_apple_MobileAsset_GeoPolygonDataAssets",
+        "com_apple_MobileAsset_UAF_Music_ConcertsRanking", "com_apple_MobileAsset_UAF_FM_Overrides",
+        "com_apple_MobileAsset_SharingDeviceAssets",
+      ].map { root.appendingPathComponent("private/var/MobileAsset/AssetsV2/" + $0) }
+    case "wallpaper-cache":
+      candidates = try posterSnapshotCaches(root)
+    case "intelligence-data":
+      candidates = ["Library/IntelligencePlatform", "Library/Biome", "Library/DuetExpertCenter"]
+        .map(
+          root.appendingPathComponent)
     case "required-siri-assets":
       let assets = root.appendingPathComponent("private/var/MobileAsset/AssetsV2")
       if !exists(assets) { return [] }
       try requireDirectory(assets)
       try requireDescendant(root, assets)
-      let prefixes = [
-        "com_apple_MobileAsset_UAF_Siri_", "com_apple_MobileAsset_TTS",
-        "com_apple_MobileAsset_VoiceServices_", "com_apple_MobileAsset_VoiceTrigger",
+      let catalogs: Set<String> = [
+        "com_apple_MobileAsset_UAF_Siri_DialogAssets",
+        "com_apple_MobileAsset_UAF_Siri_UnderstandingASRHammer",
+        "com_apple_MobileAsset_UAF_Siri_Understanding",
+        "com_apple_MobileAsset_UAF_Siri_TextToSpeech",
+        "com_apple_MobileAsset_UAF_Siri_FindMyConfigurationFiles",
+        "com_apple_MobileAsset_SiriInferenceHolidays",
+        "com_apple_MobileAsset_TTSAXResourceModelAssets",
+        "com_apple_MobileAsset_VoiceTriggerAssetsStudioDisplay",
+        "com_apple_MobileAsset_VoiceServices_CombinedVocalizerVoices",
+        "com_apple_MobileAsset_MacinTalkVoiceAssets",
       ]
-      candidates = try children(assets).filter { url in
-        prefixes.contains { url.lastPathComponent.hasPrefix($0) }
-      }
+      candidates = try children(assets).filter { catalogs.contains($0.lastPathComponent) }
     default: throw SimulatorError("Unknown cleanup category: \(category)")
     }
     return try compact(root, candidates)
+  }
+  /// Only the observed snapshot-cache layout is eligible. Configuration and source content stay intact.
+  static func posterSnapshotCaches(_ root: URL) throws -> [URL] {
+    let store = root.appendingPathComponent(
+      "Library/Application Support/PRBPosterExtensionDataStore")
+    guard exists(store) else { return [] }
+    try requireDirectory(store)
+    try requireDescendant(root, store)
+    let baseCount = store.standardizedFileURL.pathComponents.count
+    var candidates: [URL] = []
+    try walk(store) { url, data in
+      try Task.checkCancellation()
+      guard isDirectory(data), url.lastPathComponent == "SnapshotCache.cachedb" else { return true }
+      let parts = Array(url.standardizedFileURL.pathComponents.dropFirst(baseCount))
+      guard parts.count == 9,
+        Int(parts[0]) != nil, parts[1] == "Extensions", parts[2].hasPrefix("com.apple."),
+        ["configurations", "descriptors", "staticdescriptors"].contains(parts[3]),
+        UUID(uuidString: parts[4]) != nil, parts[5] == "versions", Int(parts[6]) != nil,
+        parts[7] == "scratch"
+      else { return false }
+      candidates.append(url)
+      return false
+    }
+    return candidates
   }
   static func clear(_ root: URL, target: URL) throws {
     guard exists(target) else { return }
@@ -180,56 +256,115 @@ enum DiskStore {
   static func selection(_ ids: Set<String>) throws -> [String] {
     guard !ids.isEmpty, ids.isSubset(of: Set(categories.filter(\.canClean).map(\.id))) else {
       throw SimulatorError(
-        "Select at least one supported cleanup category. Required system assets cannot be deleted.")
+        "Select at least one supported cleanup category. Unknown system paths cannot be deleted.")
     }
     return ids.sorted()
   }
-  static func storage(_ root: URL) throws -> [SimulatorDiskStorageMeasurement] {
+  static func plan(udid: String, root: URL) throws -> SimulatorDiskCleanupPlan {
+    try Task.checkCancellation()
+    let root = root.standardizedFileURL
+    try requireDirectory(root)
+    let categoryTargets = try categories.map { try targets(root, category: $0.id) }
     let containers = ["Containers/Data/Application", "Containers/Shared/AppGroup"].map(
       root.appendingPathComponent)
     var documents: [URL] = []
-    var appBytes: Int64 = 0
     for container in try compact(root, containers) {
       for app in try children(container) where isDirectory(try info(app)) {
         documents.append(app.appendingPathComponent("Documents"))
       }
-      appBytes += try allocatedSize(container, excluding: ["Caches", "Documents", "Logs", "tmp"])
     }
-    func size(_ candidates: [URL]) throws -> Int64 {
-      try compact(root, candidates).reduce(0) { try $0 + allocatedSize($1) }
-    }
-    return [
-      .init(
-        id: "installed-apps", name: "Installed Apps",
-        description: "Developer-installed app and test-runner bundles.",
-        bytes: try size([root.appendingPathComponent("Containers/Bundle/Application")])),
-      .init(
-        id: "documents", name: "Documents", description: "App and app-group Documents directories.",
-        bytes: try size(documents)),
-      .init(
-        id: "app-data", name: "App Data",
-        description: "Preferences, databases, and support files outside cleanup categories.",
-        bytes: appBytes),
-      .init(
-        id: "user-media", name: "User Media", description: "Photos, videos, and downloads.",
-        bytes: try size([root.appendingPathComponent("Media")])),
+    // Earlier regions take precedence. Every allocated block belongs to one displayed bucket.
+    let regions: [(id: String, roots: [URL])] = [
+      ("installed-apps", [root.appendingPathComponent("Containers/Bundle/Application")]),
+      ("documents", documents),
+      ("app-data", containers),
+      ("user-media", [root.appendingPathComponent("Media")]),
+      (
+        "wallpapers",
+        [root.appendingPathComponent("Library/Application Support/PRBPosterExtensionDataStore")]
+      ),
+      ("system-assets", [root.appendingPathComponent("private/var/MobileAsset")]),
     ]
-  }
-  static func plan(udid: String, root: URL) throws -> SimulatorDiskCleanupPlan {
-    try requireDirectory(root)
-    var measurements: [SimulatorDiskCleanupMeasurement] = []
-    var total: Int64 = 0
-    var cleanable: Int64 = 0
-    for category in categories {
-      let targets = try targets(root, category: category.id)
-      let bytes = try targets.reduce(Int64(0)) { try $0 + allocatedSize($1) }
-      measurements.append(.init(id: category.id, bytes: bytes, targets: targets.count))
-      total += bytes
-      if category.canClean { cleanable += bytes }
+    // Normalize once. Descendants inherit their bucket instead of comparing each file
+    // against every target via standardizedFileURL (which can perform filesystem I/O).
+    var categoryAtPath: [String: Int] = [:]
+    for index in categories.indices.reversed() {
+      for target in categoryTargets[index] {
+        categoryAtPath[target.standardizedFileURL.path] = index
+      }
     }
+    var regionAtPath: [String: Int] = [:]
+    for index in regions.indices.reversed() {
+      for target in regions[index].roots { regionAtPath[target.standardizedFileURL.path] = index }
+    }
+    var categoryBytes = Array(repeating: Int64(0), count: categories.count)
+    var storageBytes: [String: Int64] = [:]
+    var total: Int64 = 0
+    func scan(_ url: URL, path: String, category: Int? = nil, region: Int? = nil) throws {
+      try Task.checkCancellation()
+      let data: stat
+      do {
+        data = try info(url)
+      } catch let error as POSIXError where error.code == .ENOENT && url != root {
+        // A running simulator may remove a transient file during this read-only scan.
+        return
+      }
+      let category = [category, categoryAtPath[path]].compactMap { $0 }.min()
+      let region = [region, regionAtPath[path]].compactMap { $0 }.min()
+      let bytes = Int64(data.st_blocks) * 512
+      total += bytes
+      if let category { categoryBytes[category] += bytes }
+      if category.map({ !categories[$0].canClean }) ?? true {
+        let id = region.map { regions[$0].id } ?? "other-system-data"
+        storageBytes[id, default: 0] += bytes
+      }
+      if isDirectory(data) {
+        let entries: [URL]
+        do {
+          entries = try children(url)
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile && url != root {
+          return
+        }
+        for child in entries {
+          try scan(
+            child, path: path + "/" + child.lastPathComponent, category: category, region: region)
+        }
+      }
+    }
+    try scan(root, path: root.path)
+    let measurements = categories.indices.map {
+      SimulatorDiskCleanupMeasurement(
+        id: categories[$0].id, bytes: categoryBytes[$0], targets: categoryTargets[$0].count)
+    }
+    let descriptions: [(String, String, String)] = [
+      ("installed-apps", "Installed Apps", "Developer-installed app and test-runner bundles."),
+      ("documents", "Documents", "App and app-group Documents directories."),
+      (
+        "app-data", "App Data",
+        "Preferences, databases, and support files outside cleanup categories."
+      ),
+      ("user-media", "User Media", "Photos, videos, and downloads."),
+      (
+        "wallpapers", "Wallpaper Settings & Originals",
+        "Saved configurations and source content. Generated snapshots are offered under Wallpaper & Poster Cache above."
+      ),
+      (
+        "system-assets", "Other System Assets",
+        "Other downloads and custom voices. Known Siri catalogs are offered for cleanup above."
+      ),
+      (
+        "other-system-data", "Other System Data",
+        "Remaining system containers and durable data, including Health, Home, and Shortcuts. Use Erase to reset the whole simulator."
+      ),
+    ]
     return .init(
-      udid: udid, totalBytes: total, cleanableBytes: cleanable, categories: measurements,
-      storage: try storage(root))
+      udid: udid, totalBytes: total,
+      cleanableBytes: categories.indices.filter { categories[$0].canClean }.reduce(0) {
+        $0 + categoryBytes[$1]
+      }, categories: measurements,
+      storage: descriptions.map {
+        .init(id: $0.0, name: $0.1, description: $0.2, bytes: storageBytes[$0.0, default: 0])
+      })
   }
 }
 
@@ -238,9 +373,14 @@ extension SwiftSimSlimBackend {
     let device = try await find(udid)
     let root = try DiskStore.dataDirectory(device)
     stage("Analyzing disk usage…", device)
-    return try await Task.detached(priority: .utility) {
+    let task = Task.detached(priority: .utility) {
       try DiskStore.plan(udid: udid, root: root)
-    }.value
+    }
+    return try await withTaskCancellationHandler {
+      try await task.value
+    } onCancel: {
+      task.cancel()
+    }
   }
   func cleanDisk(udid: String, categoryIDs: Set<String>, preserveBootState: Bool) async throws
     -> SimulatorDiskCleanupResult

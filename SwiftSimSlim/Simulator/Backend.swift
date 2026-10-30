@@ -8,6 +8,7 @@ struct RawDevice: Sendable, Decodable {
   let dataPath: String?
   var set: String = ""
   var osVersion: String = ""
+  var runtimeID: String = ""
   var isBooted: Bool { state == "Booted" }
   enum CodingKeys: String, CodingKey { case udid, name, state, isAvailable, dataPath }
 }
@@ -51,6 +52,7 @@ struct SwiftSimSlimBackend: Sendable {
           for var device in devices where device.isAvailable != false {
             guard UUID(uuidString: device.udid) != nil else { continue }
             device.set = token
+            device.runtimeID = runtime
             device.osVersion = runtime.components(separatedBy: "iOS-").last!.replacingOccurrences(
               of: "-", with: ".")
             all.append(device)
@@ -99,11 +101,44 @@ struct SwiftSimSlimBackend: Sendable {
     ).checked()
   }
 
-  func disabled(_ device: RawDevice, log: Bool = false) async throws -> Set<String> {
+  /// Retry only transient launchd failures; never interpret failed output as a profile.
+  func readLaunchd(
+    _ device: RawDevice, arguments: [String], log: Bool,
+    retryDelays: [Duration] = [.seconds(1), .seconds(2), .seconds(4), .seconds(8)]
+  ) async throws -> CommandResult {
+    let args =
+      ["simctl"] + (device.set.isEmpty ? [] : ["--set", device.set])
+      + ["spawn", device.udid, "launchctl"] + arguments
+    for attempt in 0...retryDelays.count {
+      try Task.checkCancellation()
+      do {
+        let result = try await runner.run(
+          "/usr/bin/xcrun", args, timeout: 120, udid: device.udid, log: log)
+        try Task.checkCancellation()
+        if result.status == 0 { return result }
+        let diagnostic = result.diagnostic + "\n" + result.text
+        let settling =
+          result.status == 124 || diagnostic.contains("code=124")
+          || diagnostic.contains("Domain is tearing down")
+        if !settling || attempt == retryDelays.count { return try result.checked() }
+      } catch let error as SimulatorError where error.isTimeout {
+        try Task.checkCancellation()
+        if attempt == retryDelays.count { throw error }
+      }
+      if log { stage("Waiting for launchd · retry \(attempt + 1)/\(retryDelays.count)…", device) }
+      try await Task.sleep(for: retryDelays[attempt])
+    }
+    throw SimulatorError("Could not read launchd service state.")
+  }
+
+  func disabled(
+    _ device: RawDevice, log: Bool = false,
+    retryDelays: [Duration] = [.seconds(1), .seconds(2), .seconds(4), .seconds(8)]
+  ) async throws -> Set<String> {
     let start = ContinuousClock.now
     defer { if log { timing("service-state-read", start, device.udid) } }
-    let output = try await simctl(
-      device, ["spawn", device.udid, "launchctl", "print-disabled", "system"], log: log)
+    let output = try await readLaunchd(
+      device, arguments: ["print-disabled", "system"], log: log, retryDelays: retryDelays)
     if output.text == "disabled services = (no disabled services)" { return [] }
     guard output.text.contains("disabled services = {"), output.text.hasSuffix("}") else {
       throw SimulatorError(

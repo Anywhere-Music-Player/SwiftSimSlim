@@ -9,9 +9,25 @@ struct SimulatorRow: View {
 
   private var isSelected: Bool { model.selectedUDIDs.contains(device.udid) }
   private var operation: String? { model.activeOperations[device.udid] }
+  private var isAnalyzingDisk: Bool {
+    model.operations.entries[device.udid]?.ticket.action == .analyze
+  }
 
   var body: some View {
     VStack(spacing: 7) {
+      if let pending = model.serviceRestartRequired[device.udid], !pending.isEmpty {
+        DisclosureGroup {
+          ForEach(pending, id: \.self) { label in Text(label).font(.caption.monospaced()) }
+          Button("Restart Simulator") { Task { await model.restartSimulator(device) } }
+            .disabled(!device.isBooted || model.isOperating(device))
+        } label: {
+          Label(
+            "\(pending.count) enabled services could not load · restart may be needed",
+            systemImage: "exclamationmark.triangle"
+          )
+          .font(.caption).foregroundStyle(.orange)
+        }
+      }
       HStack(spacing: 12) {
         Button {
           model.toggleSelection(device.udid)
@@ -71,11 +87,11 @@ struct SimulatorRow: View {
         ServiceStateView(
           state: model.slimState(for: device),
           isCached: model.stateIsCached(for: device),
-          operation: operation
+          operation: isAnalyzingDisk ? nil : operation
         )
         .frame(width: 150, alignment: .leading)
 
-        Text(model.diskSizeText(for: device))
+        Text(isAnalyzingDisk ? "Analyzing…" : model.diskSizeText(for: device))
           .font(.subheadline.monospacedDigit())
           .foregroundStyle(model.diskSizes[device.udid] == nil ? .tertiary : .secondary)
           .frame(width: 105, alignment: .leading)
@@ -130,6 +146,8 @@ struct SimulatorRow: View {
           .disabled(model.isOperating(device))
 
           Section("Disk Space") {
+            Button("Manage Apps & Data…") { managementSheet = .appStorage(device) }
+              .disabled(model.isOperating(device))
             Button(role: .destructive) {
               managementSheet = .diskCleanup([device], diskCleanupCategories)
             } label: {
@@ -212,7 +230,7 @@ struct SimulatorRow: View {
         .frame(width: 28)
       }
 
-      if let operation {
+      if let operation, !isAnalyzingDisk {
         HStack(spacing: 8) {
           ProgressView()
             .controlSize(.small)
@@ -232,8 +250,6 @@ struct SimulatorRow: View {
     .padding(.horizontal, 18)
     .padding(.vertical, 9)
     .background(isSelected ? Color.accentColor.opacity(0.075) : Color.clear)
-    .animation(.easeInOut(duration: 0.16), value: isSelected)
-    .animation(.easeInOut(duration: 0.16), value: operation)
   }
 
   private var simulatorDirectoryURL: URL {

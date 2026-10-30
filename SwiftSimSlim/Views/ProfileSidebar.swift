@@ -5,11 +5,17 @@ struct ProfileSidebar: View {
   @Environment(AppModel.self) private var model
   @Binding var mode: SlimmingMode
   @State private var serviceSearchText = ""
+  @State private var appStorageDevice: SimulatorDevice?
+  @State private var eraseDevice: SimulatorDevice?
+  // The system application icon can remain cached after replacing a local build.
+  private static let appIcon: NSImage =
+    Bundle.main.url(forResource: "AppIcon", withExtension: "icns")
+    .flatMap { NSImage(contentsOf: $0) } ?? NSApplication.shared.applicationIconImage
 
   var body: some View {
     VStack(spacing: 0) {
       HStack(spacing: 12) {
-        Image(nsImage: NSApplication.shared.applicationIconImage)
+        Image(nsImage: Self.appIcon)
           .resizable()
           .interpolation(.high)
           .scaledToFit()
@@ -47,6 +53,7 @@ struct ProfileSidebar: View {
         }
         .padding(16)
       }
+      .frame(minHeight: 0, maxHeight: .infinity)
     }
     .background(.regularMaterial)
   }
@@ -81,15 +88,8 @@ struct ProfileSidebar: View {
   }
 
   private var sortedDiskCategories: [DiskCleanupCategory] {
-    model.diskCleanupCategories.filter(\.canClean).sorted {
-      let left = model.diskCleanupBytes(for: $0.id) ?? 0
-      let right = model.diskCleanupBytes(for: $1.id) ?? 0
-      if left == right {
-        if $0.canClean != $1.canClean { return $0.canClean }
-        return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-      }
-      return left > right
-    }
+    // Keep controls in catalog order as selections and analysis results change.
+    model.diskCleanupCategories.filter(\.canClean)
   }
 
   private var memoryContent: some View {
@@ -180,20 +180,17 @@ struct ProfileSidebar: View {
             .font(.caption.monospacedDigit().weight(.semibold))
             .foregroundStyle(model.diskAnalysisCoversSelection ? Color.orange : Color.secondary)
         }
-        Text("Updates automatically when your selection changes. Analysis is read-only.")
-          .font(.caption)
-          .foregroundStyle(.secondary)
-          .fixedSize(horizontal: false, vertical: true)
-
-        Button {
-          Task { await model.analyzeDiskSelection() }
-        } label: {
-          Label("Re-analyze Selected", systemImage: "arrow.clockwise")
+        if model.diskAnalysisCoversSelection {
+          LabeledContent("Total on Disk", value: model.selectedDiskTotalSizeText)
+            .font(.subheadline.weight(.semibold))
         }
-        .buttonStyle(.borderless)
-        .controlSize(.small)
-        .disabled(!model.canOperateOnSelection)
-        .help("Refresh disk usage for the selected simulators")
+        Text(
+          "Total includes cleanup categories and retained storage below. Shared iOS runtimes are separate."
+        )
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .fixedSize(horizontal: false, vertical: true)
+
       }
 
       VStack(alignment: .leading, spacing: 8) {
@@ -204,20 +201,33 @@ struct ProfileSidebar: View {
 
       if model.diskAnalysisCoversSelection {
         VStack(alignment: .leading, spacing: 8) {
-          Text("Storage breakdown")
+          Text("Retained Storage")
             .font(.headline)
-          Text("Read-only sizes. These files are never selected for cleanup.")
-            .font(.caption)
-            .foregroundStyle(.secondary)
+          Text(
+            "These files account for the rest of the disk usage. Manage individual apps and their private data separately."
+          )
+          .font(.caption)
+          .foregroundStyle(.secondary)
 
           ForEach(model.diskStorageRows) { storage in
             DiskStorageRow(
               storage: storage,
-              sizeText: model.diskStorageSizeText(for: storage.id)
+              sizeText: model.diskStorageSizeText(for: storage.id),
+              canManageApps: model.selectedDevices.count == 1 && model.canOperateOnSelection,
+              onManageApps: { appStorageDevice = model.selectedDevices.first },
+              onErase: { eraseDevice = model.selectedDevices.first }
             )
           }
         }
       }
+
+      Color.clear.frame(height: 0)
+        .sheet(item: $appStorageDevice) { device in AppStorageView(device: device) }
+        .sheet(item: $eraseDevice) { device in
+          SimulatorDestructiveSheet(action: .erase, devices: [device]) {
+            Task { await model.eraseSimulators([device]) }
+          }
+        }
 
       Toggle(
         "Reopen previously booted simulators",
@@ -227,7 +237,7 @@ struct ProfileSidebar: View {
 
       VStack(alignment: .leading, spacing: 7) {
         Text(
-          "Required Siri assets aren’t offered for deletion — iOS restores them automatically on launch."
+          "Downloaded Siri assets and system intelligence history are optional cleanup categories. Downloads and indexes may return after boot."
         )
         .font(.caption.weight(.semibold))
         .foregroundStyle(.blue)
@@ -366,27 +376,45 @@ struct DiskCleanupCategoryToggle: View {
 struct DiskStorageRow: View {
   let storage: SimulatorDiskStorageMeasurement
   let sizeText: String
+  var canManageApps = false
+  var onManageApps: (() -> Void)?
+  var onErase: (() -> Void)?
 
   var body: some View {
-    HStack(alignment: .top, spacing: 9) {
-      Image(systemName: storage.systemImage)
-        .foregroundStyle(.secondary)
-        .frame(width: 17)
-
-      VStack(alignment: .leading, spacing: 2) {
-        Text(storage.name)
-          .font(.subheadline.weight(.medium))
-        Text(storage.description)
-          .font(.caption)
+    VStack(alignment: .leading, spacing: 9) {
+      HStack(alignment: .top, spacing: 9) {
+        Image(systemName: storage.systemImage)
           .foregroundStyle(.secondary)
-          .fixedSize(horizontal: false, vertical: true)
+          .frame(width: 17)
+
+        VStack(alignment: .leading, spacing: 2) {
+          Text(storage.name)
+            .font(.subheadline.weight(.medium))
+          Text(storage.description)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+
+        Spacer(minLength: 8)
+
+        Text(sizeText)
+          .font(.caption.monospacedDigit().weight(.semibold))
+          .foregroundStyle(.secondary)
       }
-
-      Spacer(minLength: 8)
-
-      Text(sizeText)
-        .font(.caption.monospacedDigit().weight(.semibold))
-        .foregroundStyle(.secondary)
+      if storage.id == "apps-and-data", let onManageApps {
+        Button("Manage Apps & Data…", action: onManageApps)
+          .disabled(!canManageApps)
+          .help("Select one simulator to manage its apps")
+      }
+      if ["other-system-data", "system-assets"].contains(storage.id), let onErase {
+        Button("Erase Simulator…", role: .destructive, action: onErase)
+          .buttonStyle(.borderedProminent)
+          .tint(.red)
+          .fontWeight(.bold)
+          .disabled(!canManageApps)
+          .help("Resets all apps, settings, and user data after confirmation")
+      }
     }
     .padding(9)
     .frame(maxWidth: .infinity, alignment: .leading)
@@ -603,3 +631,59 @@ struct AlwaysEnabledServiceRow: View {
     .background(Color.blue.opacity(0.05), in: RoundedRectangle(cornerRadius: 7))
   }
 }
+
+#if DEBUG
+  #Preview("Storage controls") {
+    let sampleApps = SimulatorDiskStorageMeasurement(
+      id: "apps-and-data", name: "Apps & Data",
+      description: "Installed apps and their support data. Documents are listed separately.",
+      bytes: 595_500_000)
+    let model = AppModel.preview(
+      diskPlan: .init(
+        udid: "00000000-0000-0000-0000-000000000001", totalBytes: 4_140_000_000,
+        cleanableBytes: 3_396_000_000,
+        categories: [.init(id: "wallpaper-cache", bytes: 3_396_000_000, targets: 100)],
+        storage: []))
+    VStack(alignment: .leading, spacing: 14) {
+      Text("Cleanup").font(.headline)
+      if let category = DiskStore.categories.first(where: { $0.id == "wallpaper-cache" }) {
+        DiskCleanupCategoryToggle(category: category)
+      }
+      Text("Retained Storage").font(.headline)
+      DiskStorageRow(
+        storage: sampleApps, sizeText: sampleApps.sizeText,
+        canManageApps: true, onManageApps: {})
+    }
+    .padding(16)
+    .frame(width: 380)
+    .environment(model)
+  }
+  #Preview("Advanced cleanup controls") {
+    let model = AppModel.preview(
+      diskPlan: .init(
+        udid: "00000000-0000-0000-0000-000000000001", totalBytes: 4_115_000_000,
+        cleanableBytes: 3_669_000_000,
+        categories: [
+          .init(id: "required-siri-assets", bytes: 1_381_593_088, targets: 10),
+          .init(id: "system-models", bytes: 292_000_000, targets: 11),
+          .init(id: "intelligence-data", bytes: 127_578_112, targets: 3),
+        ], storage: []))
+    VStack(alignment: .leading, spacing: 10) {
+      ForEach(
+        DiskStore.categories.filter {
+          ["required-siri-assets", "system-models", "intelligence-data"].contains($0.id)
+        }
+      ) { category in
+        DiskCleanupCategoryToggle(category: category)
+      }
+      DiskStorageRow(
+        storage: .init(
+          id: "other-system-data", name: "Other System Data",
+          description:
+            "Remaining system containers and durable data, including Health, Home, and Shortcuts. Use Erase to reset the whole simulator.",
+          bytes: 235_708_416), sizeText: "235.7 MB",
+        canManageApps: true, onErase: {})
+    }
+    .padding(16).frame(width: 400).environment(model)
+  }
+#endif

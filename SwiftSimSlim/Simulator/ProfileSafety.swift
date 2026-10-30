@@ -100,7 +100,7 @@ struct ServiceChangePlan: Sendable, Identifiable {
 }
 
 extension SwiftSimSlimBackend {
-  private func profileDevice(_ udid: String) async throws -> RawDevice {
+  func profileDevice(_ udid: String) async throws -> RawDevice {
     guard UUID(uuidString: udid) != nil else {
       throw SimulatorError("An exact simulator UUID is required.")
     }

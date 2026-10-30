@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="SwiftSimSlim/Resources/AppIcon.icon/Assets/Icon.png" alt="SwiftSimSlim app icon" width="144" height="144">
+  <img src="docs/images/swiftsimslim-icon.png" alt="SwiftSimSlim app icon" width="144" height="144">
   <h1>SwiftSimSlim</h1>
   <p>A native macOS app for managing and slimming iOS simulators.</p>
   <p>
@@ -30,9 +30,33 @@ SwiftSimSlim calls Apple’s `simctl` directly, with an in-process Swift backend
 | --- | --- |
 | Service profiles | Slim or re-enable allowlisted services while keeping required compatibility services enabled. |
 | Preview and recovery | Review planned changes, save the original service state, export it as JSON, and restore a saved profile. |
-| Simulator management | Manage simulator lifecycle, clone a device, and review disk cleanup before confirming it. |
+| Full Slim & Clean | Apply the complete service profile and clean supported disk categories in one confirmed operation, preserving apps and their durable data. |
+| Disk analysis and cleanup | See where the full data-directory size goes; select caches, logs, temporary files, and optional downloaded assets or indexes. |
+| Apps & Data | List installed apps by size, uninstall an app, or selectively clear its Documents or other private data. |
+| Live service profiles | Apply a profile to an already booted simulator without an automatic restart, with readback verification and restart-needed reporting. |
+| Simulator management | Boot, shut down, rename, clone, erase, or delete individual simulators. |
 | Independent operations | Follow separate progress and logs for each device, with at most two heavy operations at once. |
 | Boot-state preservation | Return a simulator to its original Booted or Shutdown state after a successful profile operation. |
+
+## New in 26.1
+
+Full Slim & Clean, per-app storage management, a complete disk breakdown, optional wallpaper/Siri/model cleanup, restart-free service changes, and a new simulator-and-RAM icon. Disk selection and analysis keep row heights, category order, and the toolbar layout stable. See the [release notes](docs/releases/26.1.md).
+
+### Screenshots
+
+These are captures of the running app with seven synthetic simulator entries and temporary sample files. Sizes and service states are demonstration data, not performance measurements. Main-window captures include the test banner; the app inventory capture shows only its sheet.
+
+**Disk Cleanup:** selected size, cleanup controls, stable categories, and per-device progress.
+
+![Disk Cleanup with seven test simulators](docs/images/swiftsimslim-disk-cleanup.png)
+
+**Apps & Data:** measured app bundles, Documents, other private data, and selective deletion actions.
+
+![Apps and private data inventory](docs/images/swiftsimslim-apps-data.png)
+
+**Full Slim & Clean:** one confirmation for the full service profile and supported cleanup categories.
+
+![Full Slim and Clean confirmation](docs/images/swiftsimslim-full-cleanup.png)
 
 ## Quick start
 
@@ -40,7 +64,7 @@ SwiftSimSlim calls Apple’s `simctl` directly, with an in-process Swift backend
 
 You need a Mac with Xcode and its simulator tools, plus an installed iOS Simulator runtime. **Persistent slimming requires iOS 18.5 or later.** The project uses Swift 6 and an Icon Composer app icon; use Xcode capable of opening those project resources. See the [verification matrix](#safety-and-test-matrix) for the recorded environment and its limits.
 
-The published **26.0.2** release provides source archives, with no prebuilt app attached. You can [download the release source](https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases/latest) or clone the current development version:
+The published **26.1** release provides source archives, with no prebuilt app attached. You can [download the release source](https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases/latest) or clone the current development version:
 
 ```sh
 git clone https://github.com/Anywhere-Music-Player/SwiftSimSlim.git
@@ -48,7 +72,7 @@ cd SwiftSimSlim
 open SwiftSimSlim.xcodeproj
 ```
 
-In Xcode, select **SwiftSimSlim → My Mac**, then press **Cmd-R** to build and launch. The 26.0.2 source release includes the features described below.
+In Xcode, select **SwiftSimSlim → My Mac**, then press **Cmd-R** to build and launch. The 26.1 source release includes the features described below.
 
 ### Apply your first profile
 
@@ -64,6 +88,10 @@ Disabling services can affect features that depend on them. A saved service stat
 - [Architecture and comparison with simslim](#why-swift)
 - [How slimming works](#how-slimming-avoids-unnecessary-work)
 - [Preview, save, export, and restore](#preview-save-export-and-restore)
+- [Apply a profile without restarting](#apply-a-profile-without-restarting)
+- [Disk analysis and cleanup](#disk-analysis-and-cleanup)
+- [Full Slim & Clean](#full-slim--clean)
+- [Apps & Data](#inspect-apps-and-selectively-delete-private-data)
 - [Safety evidence and reproducible checks](#safety-and-test-matrix)
 - [Measured service-update time](#measured-service-update-time)
 - [Boot-state behavior](#why-a-simulator-can-finish-in-shutdown)
@@ -118,6 +146,60 @@ Restoration only touches the current allowlist, always enables required compatib
 
 On failure, the original boot state is recovered when possible and the saved service state remains available for explicit restoration. Partially applied service changes are **not automatically rolled back**. Activity reports recovery failures too; inspect the log before retrying.
 
+## Apply a profile without restarting
+
+In **Preview Service Changes** or **Preview Unslim**, enable **Apply without restarting the simulator**. It is available only when every selected simulator is booted. The existing restart mode remains the default.
+
+The app saves the current service state before changing anything, then loads or unloads matching runtime jobs in batches and uses individual commands for unfinished transitions. It verifies both disabled overrides and loaded jobs afterward. Required compatibility services stay enabled and unmanaged overrides are preserved. A loaded job may be idle; this check does not claim that every related process is running or that every feature works.
+
+If an enabled job cannot load in the current boot session, its label appears in an expandable warning beside the simulator. **Restart Simulator** is a separate, explicit action; the live operation never restarts automatically. A failed or cancelled operation can leave partial service changes; **Restore Saved State** uses the existing restart-based recovery path.
+
+This applies the complete profile shown in the preview, including shared-service dependencies implied by the retained categories. It does not save an upstream CLI profile or install a background watcher. Restart-free application still takes time for service commands; no speedup is claimed until measured on a real runtime. Build and synthetic tests are separate from live and visual acceptance.
+
+## Disk analysis and cleanup
+
+Switch to **Disk Size** and select one or more simulators. The **Disk Cleanup** bar above the list shows the selected cleanup estimate, **Re-analyze Selected**, and **Clean Disk…**. After a successful cleanup it shows the removed size for the selected devices during the current app session.
+
+The total covers the entire simulator data directory. Cleanup categories and **Retained Storage** account for that total without counting the same path in multiple buckets. Retained storage includes installed apps and support data, Documents, user media, wallpaper originals/settings, other system assets, and remaining durable system data. Shared iOS runtimes are separate. Sizes use allocated blocks; APFS sharing and files changing during analysis mean this is not a guarantee of reclaimed space.
+
+Routine cleanup selects caches, logs, and temporary files. Additional categories are opt-in:
+
+| Category | Effect |
+| --- | --- |
+| Downloaded Language Data | Removes supported language downloads, which iOS can download again. |
+| Wallpaper & Poster Cache | Clears generated snapshots in recognized Apple poster layouts; keeps source content and wallpaper configuration. It does not set a black wallpaper. |
+| Downloaded Siri & Speech Assets | Removes allowlisted per-device catalogs. Speech features may stop working until iOS restores them; custom voices and unknown catalogs stay protected. |
+| Other Downloaded System Models | Removes known model catalogs; dependent features may need to download them again. |
+| System Intelligence History & Indexes | Clears IntelligencePlatform, Biome, and DuetExpertCenter data and resets learned personalization. |
+
+Deleting assets does not disable services. iOS can regenerate caches, indexes, and downloads after boot even with optional services disabled. Remaining system data is not offered for blanket deletion; **Erase Simulator…** is a separate full reset that also deletes apps and user data.
+
+Cleanup always shows a confirmation with a red, bold action button; no typed confirmation word is required. File deletion waits for shutdown, stays within validated simulator data, and protects app bundles, Documents, user media, unknown layouts, and shared runtimes. The reopen option controls whether previously booted devices are started again. Deletion is permanent; a saved service profile cannot restore files.
+
+Analysis runs off the main actor and reports progress in the disk-size column. Categories keep their order and rows keep their height as selection and measurements change. Toolbar actions remain grouped left, center, and right in both modes.
+
+## Full Slim & Clean
+
+Choose **Optimize → Full Slim & Clean…**, or the same action in the **Simulator** menu. After confirmation, the app saves the original service state, applies and verifies Full Slim, and cleans every supported category above, including the optional speech/model downloads and learned system history. A backup or profile failure stops before cleanup. Previously booted devices can be reopened afterward.
+
+Apps, Documents, photos, and app settings are preserved. This is not an Erase, does not promise zero RAM use, and cannot prevent all future downloads. The required compatibility services remain enabled. If you need selective cleanup, use **Clean Disk…** instead.
+
+## Inspect apps and selectively delete private data
+
+Select one simulator and open **Apps & Data** from the Disk toolbar, **Manage Apps & Data…** inside the **Apps & Data** card under Retained Storage, or the row menu. The searchable list shows developer-installed apps, largest first, with allocated bundle, Documents, other private data, and known total sizes. Inspection works while the simulator is shutdown and does not boot it. System runtime apps are excluded. Shared App Groups and User Media are reported separately; extension data containers are not attributed to their parent app. Unknown sizes remain marked unknown. APFS sharing and changing app files mean these totals are not guaranteed reclaimed space.
+
+Select one app, choose an action, and confirm with the red deletion button:
+
+- **Uninstall App** uses CoreSimulator to remove that app and its private data. Shared group data may remain.
+- **Delete Documents** clears only that app's Documents contents.
+- **Clear App Data** clears its other private files, including preferences, databases, caches, and temporary files. Documents and shared containers remain.
+
+These operations permanently delete the selected data and have no automatic backup. A simulator clone is the recovery option before deletion; saved service-state snapshots cannot restore files. The backend resolves the exact UUID and device set, revalidates the app's container registration through CoreSimulator, and shuts down before direct file deletion. It restores the original boot state even after an operation fails or is cancelled; a partial deletion is not rolled back. Previously shutdown simulators can briefly boot for validation or uninstall.
+
+**Open Photos in Simulator** starts the selected simulator and opens Photos for selecting and deleting media there. The app does not directly remove Photos database files or shared App Group contents. The existing routine disk cleanup still excludes app bundles, Documents, and user media.
+
+Validation covers temporary-fixture size accounting, selective deletion, container identity/path rejection, shutdown-before-clear, uninstall routing, and boot-state recovery. The UI test opens the inventory and deletion confirmation using temporary sample apps, then cancels; it does not delete real simulator apps.
+
 ## Safety and test matrix
 
 Evidence types are separate. Passing synthetic tests does not establish runtime or UI compatibility, and a verified disabled override does not prove every related process has exited.
@@ -125,6 +207,7 @@ Evidence types are separate. Passing synthetic tests does not establish runtime 
 | Evidence | Environment | Services / checks | Result |
 | --- | --- | --- | --- |
 | Build and synthetic tests, 2026-09-22 | Apple M1 Pro, 16 GiB; macOS 27.0 (26A428); Xcode 27.0 (27A266a); My Mac | Read-only preview; snapshot persistence/export; stale preview; failed save; cancellation; partial-profile restore; compatibility/unmanaged boundaries; concurrent failure and selective retry | 53 tests passed, 0 failed; live/visual tests are opt-in |
+| UI interaction, 2026-10-30 | My Mac; seven synthetic devices and temporary app files | Disk selection and analysis at three window sizes; toolbar distribution in both modes; app inventory and confirmation; combined cleanup confirmation | Captured in the screenshots above; no real simulator mutation |
 | Service-command benchmark, 2026-09-21 | M1 Pro; Xcode 27.0; isolated iPhone 18 Pro, iOS 27.0 | Same 170 labels; restored state verified after reboot | Historical single-run result below; excludes lifecycle time |
 | Visual snapshots, 2026-09-22 | macOS 27.0; synthetic models | Main view at 1500×900 / 1080×700; service preview at 690×640 | Rendered and inspected; does not establish interactive or runtime behavior |
 | Live safety attempt, 2026-09-22 | M1 Pro, 16 GiB; macOS 27.0; Xcode 27.0; fresh isolated iPhone 18 Pro / iOS 27.0 | Boot/readiness completed in 101.44 s; fixture installation timed out at 120 s, before profile application | Failed during setup; no before/after memory or apply/restore timing obtained; test device deleted and set verified empty |

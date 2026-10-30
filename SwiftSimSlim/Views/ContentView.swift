@@ -8,6 +8,10 @@ struct ContentView: View {
   @State private var managementSheet: SimulatorManagementSheet?
   @State private var slimmingMode: SlimmingMode = .memory
 
+  init(mode: SlimmingMode = .memory) {
+    _slimmingMode = State(initialValue: mode)
+  }
+
   private var filteredDevices: [SimulatorDevice] {
     guard !searchText.isEmpty else { return model.devices }
     return model.devices.filter {
@@ -43,21 +47,44 @@ struct ContentView: View {
         .navigationSplitViewColumnWidth(min: 340, ideal: 390, max: 460)
     } detail: {
       VStack(spacing: 0) {
-        header
+        SimulatorListHeader()
+          .fixedSize(horizontal: false, vertical: true)
         Divider()
+        if slimmingMode == .disk {
+          DiskActionsBar {
+            managementSheet = .diskCleanup(model.selectedDevices, selectedCleanableDiskCategories)
+          }
+          Divider()
+        }
         selectionBar
         Divider()
         simulatorTable
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-          .layoutPriority(1)
         Divider()
         ActivityPanel()
       }
+      .frame(minHeight: 0, maxHeight: .infinity, alignment: .top)
       .background(Color(nsColor: .windowBackgroundColor))
     }
+    .onChange(of: model.requestsFullSlimAndClean) { _, requested in
+      guard requested else { return }
+      model.requestsFullSlimAndClean = false
+      managementSheet = .fullSlimAndClean(model.selectedDevices)
+    }
     .toolbar {
+      ToolbarItem(placement: .navigation) {
+        Menu {
+          Button("Full Slim & Clean…") {
+            managementSheet = .fullSlimAndClean(model.selectedDevices)
+          }
+          .disabled(!model.canOperateOnSelection)
+        } label: {
+          ToolbarActionLabel("Optimize", systemImage: "wand.and.stars")
+        }
+      }
+
       if slimmingMode == .memory {
-        ToolbarItem(placement: .automatic) {
+        ToolbarItem(placement: .navigation) {
           Button {
             managementSheet = .slimmingRecommendation(model.selectedDevices)
           } label: {
@@ -67,7 +94,7 @@ struct ContentView: View {
           .help("Apply the selected service profile")
         }
 
-        ToolbarItem(placement: .automatic) {
+        ToolbarItem(placement: .navigation) {
           Button {
             managementSheet = .servicePreview(model.selectedDevices, unslim: true)
           } label: {
@@ -76,7 +103,7 @@ struct ContentView: View {
           .disabled(!model.canOperateOnSelection)
           .help("Restore all SwiftSimSlim-managed services")
         }
-        ToolbarItem(placement: .automatic) {
+        ToolbarItem(placement: .navigation) {
           Menu {
             Button("Preview Service Changes…") {
               managementSheet = .servicePreview(model.selectedDevices, unslim: false)
@@ -90,22 +117,19 @@ struct ContentView: View {
           }
         }
       } else {
-        ToolbarItem(placement: .automatic) {
-          Button(role: .destructive) {
-            managementSheet = .diskCleanup(model.selectedDevices, selectedCleanableDiskCategories)
+        ToolbarItem(placement: .navigation) {
+          Button {
+            if let device = singleSelectedDevice { managementSheet = .appStorage(device) }
           } label: {
-            ToolbarActionLabel("Clean Disk", systemImage: "externaldrive.badge.xmark")
+            ToolbarActionLabel("Apps & Data", systemImage: "app.badge")
           }
-          .disabled(!model.canCleanDiskSelection)
-          .help("Permanently clean the selected disk categories")
+          .disabled(singleSelectedDevice == nil || !model.canOperateOnSelection)
+          .help("Select one simulator to inspect apps and manage their private data")
         }
+
       }
 
-      if #available(macOS 26.0, *) {
-        ToolbarSpacer(.flexible)
-      }
-
-      ToolbarItemGroup(placement: .automatic) {
+      ToolbarItemGroup(placement: .navigation) {
         Button {
           guard let device = singleSelectedDevice else { return }
           managementSheet = .clone(device)
@@ -132,11 +156,7 @@ struct ContentView: View {
         .help("Delete Simulator")
       }
 
-      if #available(macOS 26.0, *) {
-        ToolbarSpacer(.flexible)
-      }
-
-      ToolbarItemGroup(placement: .automatic) {
+      ToolbarItemGroup(placement: .principal) {
         Button {
           guard let device = singleSelectedDevice else { return }
           Task { await model.bootSimulator(device) }
@@ -171,11 +191,7 @@ struct ContentView: View {
         .help("Rename Simulator")
       }
 
-      if #available(macOS 26.0, *) {
-        ToolbarSpacer(.flexible)
-      }
-
-      ToolbarItemGroup(placement: .automatic) {
+      ToolbarItemGroup(placement: .primaryAction) {
         Button {
           Task { await model.refresh() }
         } label: {
@@ -194,11 +210,7 @@ struct ContentView: View {
         }
       }
 
-      if #available(macOS 26.0, *) {
-        ToolbarSpacer(.flexible)
-      }
-
-      ToolbarItem(placement: .automatic) {
+      ToolbarItem(placement: .primaryAction) {
         CollapsibleToolbarSearch(
           text: $searchText,
           prompt: "Find a simulator",
@@ -234,26 +246,6 @@ struct ContentView: View {
       guard slimmingMode == .disk, model.selectionCount > 0 else { return }
       await model.analyzeDiskSelectionIfNeeded()
     }
-  }
-
-  private var header: some View {
-    HStack(spacing: 18) {
-      VStack(alignment: .leading, spacing: 4) {
-        Text("Installed Simulators")
-          .font(.system(size: 27, weight: .bold, design: .rounded))
-        Text(lastUpdatedText)
-          .font(.subheadline)
-          .foregroundStyle(.secondary)
-      }
-
-      Spacer()
-
-      MetricPill(value: "\(model.devices.count)", label: "Installed", color: .blue)
-      MetricPill(value: "\(model.bootedCount)", label: "Booted", color: .orange)
-      MetricPill(value: "\(model.selectionCount)", label: "Selected", color: .purple)
-    }
-    .padding(.horizontal, 20)
-    .padding(.vertical, 15)
   }
 
   private var selectionBar: some View {
@@ -303,7 +295,7 @@ struct ContentView: View {
       }
       .controlSize(.regular)
 
-      ForEach(model.batches) { progress in
+      ForEach(model.batches.filter { !$0.isDiskAnalysis }) { progress in
         VStack(spacing: 5) {
           ProgressView(value: progress.fraction)
             .progressViewStyle(.linear)
@@ -404,14 +396,13 @@ struct ContentView: View {
     return "square"
   }
 
-  private var lastUpdatedText: String {
-    guard let date = model.lastUpdated else { return "Loading simulator status…" }
-    return "Updated \(date.formatted(date: .omitted, time: .shortened))"
-  }
-
   @ViewBuilder
   private func managementSheetContent(for sheet: SimulatorManagementSheet) -> some View {
     switch sheet {
+    case .fullSlimAndClean(let devices):
+      FullSlimCleanupSheet(devices: devices)
+    case .appStorage(let device):
+      AppStorageView(device: device)
     case .servicePreview(let devices, let unslim):
       ServiceSafetyView(devices: devices, unslim: unslim)
     case .clone(let device):
@@ -473,7 +464,47 @@ struct ContentView: View {
   }
 }
 
+private struct SimulatorListHeader: View {
+  @Environment(AppModel.self) private var model
+  var body: some View {
+    HStack(spacing: 18) {
+      VStack(alignment: .leading, spacing: 4) {
+        Text("Installed Simulators")
+          .font(.system(size: 27, weight: .bold, design: .rounded))
+        Text(lastUpdatedText)
+          .font(.subheadline)
+          .foregroundStyle(.secondary)
+      }
+
+      Spacer()
+
+      MetricPill(value: "\(model.devices.count)", label: "Installed", color: .blue)
+      MetricPill(value: "\(model.bootedCount)", label: "Booted", color: .orange)
+      MetricPill(value: "\(model.selectionCount)", label: "Selected", color: .purple)
+    }
+    .padding(.horizontal, 20)
+    .padding(.vertical, 15)
+  }
+
+  private var lastUpdatedText: String {
+    guard let date = model.lastUpdated else { return "Loading simulator status…" }
+    return "Updated \(date.formatted(date: .omitted, time: .shortened))"
+  }
+
+}
+
 #if DEBUG
+  #Preview("Disk selection layout") {
+    ContentView(mode: .disk)
+      .environment(
+        AppModel.preview(
+          diskPlan: .init(
+            udid: "00000000-0000-0000-0000-000000000001", totalBytes: 620_000_000,
+            cleanableBytes: 0, categories: [], storage: []))
+      )
+      .frame(width: 1260, height: 820)
+  }
+
   #Preview("Simulator management") {
     ContentView()
       .environment(AppModel.preview())

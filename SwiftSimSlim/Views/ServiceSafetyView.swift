@@ -42,6 +42,7 @@ struct ServiceSafetyView: View {
   @State private var profile: ServiceProfileSnapshot?
   @State private var plans: [ServiceChangePlan] = []
   @State private var loading = true
+  @State private var withoutRestart = false
   @State private var errorMessage: String?
 
   var body: some View {
@@ -49,10 +50,16 @@ struct ServiceSafetyView: View {
       Text(unslim ? "Preview Unslim" : "Preview Service Changes")
         .font(.title2.bold())
       Text(
-        "Preview only reads state. Applying saves the original service state first, then verifies the new profile after boot. A stopped simulator is briefly booted to capture its original state."
+        withoutRestart
+          ? "Saves the original state, applies services to the running simulator, and verifies them without restarting. Services that cannot load now will be listed separately."
+          : "Preview only reads state. Applying saves the original service state first, then verifies the new profile after boot. A stopped simulator is briefly booted to capture its original state."
       )
       .font(.subheadline).foregroundStyle(.secondary)
       .fixedSize(horizontal: false, vertical: true)
+      Toggle("Apply without restarting the simulator", isOn: $withoutRestart)
+        .disabled(loading || plans.count != devices.count || !plans.allSatisfy(\.isLive))
+        .help("Available only for booted simulators. Some services may still require a restart.")
+        .accessibilityIdentifier("apply-without-restart")
       if loading {
         ProgressView("Reading service state…").frame(maxWidth: .infinity)
       }
@@ -98,14 +105,19 @@ struct ServiceSafetyView: View {
         Button("Close", role: .cancel) { dismiss() }.keyboardShortcut(.cancelAction)
         Button("Refresh Preview") { Task { await refresh() } }.disabled(loading)
         Spacer()
-        Button(unslim ? "Apply Unslim" : "Apply Profile") {
-          guard let profile else { return }
+        Button(
+          withoutRestart ? "Apply Without Restart" : (unslim ? "Apply Unslim" : "Apply Profile")
+        ) {
+          guard var profile else { return }
+          profile.withoutRestart = withoutRestart
           let reviewed = plans
           dismiss()
           Task { await model.applyReviewedProfile(profile, plans: reviewed, to: devices) }
         }
         .buttonStyle(.borderedProminent)
-        .disabled(loading || plans.count != devices.count || !model.operations.canReserve(devices))
+        .disabled(
+          loading || plans.count != devices.count || !model.operations.canReserve(devices)
+            || (withoutRestart && !plans.allSatisfy(\.isLive)))
       }
     }
     .padding(24)
@@ -135,6 +147,7 @@ struct ServiceSafetyView: View {
       errorMessage =
         "Could not read every simulator. See Activity for details, then refresh the preview."
     }
+    if !plans.allSatisfy(\.isLive) { withoutRestart = false }
     loading = false
   }
 }

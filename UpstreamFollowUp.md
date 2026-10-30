@@ -1,3 +1,23 @@
+# Режим без перезапуску — 2026-10-28
+
+На основі upstream #62 та попереднього `on --no-reboot` додано застосування повного профілю до запущеного симулятора через preview. Окремий перемикач, типово вимкнений; stopped/ambiguous/stale targets відхиляються до мутацій. Збереження початкового стану обов’язкове.
+
+RuntimeRoot визначається за точним runtime ID з `simctl`; plist допускається лише для managed label з відповідним `Label` і шляхом усередині runtime. Групові load/unload по 64, потім bounded enable/disable та bootstrap/bootout; остаточний результат визначається readback overrides і loaded jobs. Відсутні job plists трактуються як on-demand служби, як в upstream; наявний, але незавантажений job відображається в переліку restart-required. Немає автоматичного reboot/rollback. Окрема кнопка перезапуску перевіряє завантаження відкладених служб після bootstatus.
+
+Live-операція використовує наявні per-device reservations, ліміт важких операцій і backup store. Saved-state restore лишається з перезапуском. Підтримку старих runtime, CLI enable/disable окремих категорій та --save не додано. Нові fixture-тести перевіряють batch/fallback, no-op, збереження unmanaged, required-enabled repair, backup failure, stale/shutdown/ambiguous targets, cancellation, невдалий bootout, відкладений запуск, неправильні plist та symlink escapes, а також відображення результату в AppModel і явний перезапуск.
+
+Перевірка 2026-10-28: збірка SwiftSimSlim / My Mac і 65 звичайних тестів пройшли через `xcodebuild test`, у стандартному DerivedData; format lint і diff check пройшли. У fixture перевірено також явний restart після live-result та очищення списку незавантажених jobs після readback. Live-runtime, візуальна перевірка та порівняння часу не виконувалися.
+
+# Оновлення upstream — 2026-10-27
+
+Перевірено `origin/main` оригіналу до `d594c230fe9ed5080189b0ce76afabda6104bae0`; нові коміти після `6518ba7`:
+
+- #62 (`2c68da9`): перенесено повторне читання launchd при exit status 124, `code=124`, `Domain is tearing down` або timeout. До п’яти спроб, кожна з timeout 120 с, паузи 1/2/4/8 с, cancellation перериває очікування. Неповний успішний вивід та інші помилки не повторюються й не приймаються за порожній профіль. UUID і device set зберігаються в кожній спробі. CommandRunner уже обмежує очікування успадкованих pipe; цей Go-specific fix не потрібен. Live enable/disable та збереження CLI-профілів не перенесено: це нові функції з окремими контрактами, яких наша апка не має.
+- #63 (`d961aa6`): опис Search і `searchd` тепер попереджає про недоступність Recents у Files та document picker. Сервіс залишається опціональним, як в upstream; CLI doctor в апці відсутній.
+- #64 (`d594c23`): `DiskStore.named` уже пропускає весь `Containers/Bundle` і `.app`. Додано регресії для ресурсів Caches/Logs/tmp у застосунку, extension, framework та іншому bundle storage: вони не входять до cleanable bytes і залишаються після очищення, звичайні disposable-файли видаляються, контейнер зберігається.
+
+Перевірка 2026-10-27: збірка й 60 тестів у `SwiftSimSlimTests` пройшли (`xcodebuild test`, SwiftSimSlim / My Mac, стандартний DerivedData). Swift format lint і `git diff --check` пройшли. Live-runtime та візуальні перевірки не запускалися. Нові fixture-тести очищають лише власні тимчасові каталоги.
+
 # Оновлення upstream — 2026-10-15
 
 Перевірено свіжий `origin/main` оригіналу: `6518ba7eab1123d7e1d7797b0e05f51043b42a5b`.

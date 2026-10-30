@@ -119,6 +119,7 @@ struct ServiceProfileSnapshot: Sendable, Equatable {
   let categories: Set<String>
   let labels: Set<String>
   let preserveBootState: Bool
+  var withoutRestart = false
   let disabledCount: Int
   var reviewedStates: [String: Set<String>] = [:]
 
@@ -135,8 +136,10 @@ enum SimulatorAction: Sendable, Equatable {
   case preview(ServiceProfileSnapshot)
   case restoreSaved(ServiceStateBackup)
   case restore(preserveBootState: Bool)
+  case fullSlimAndClean(preserveBootState: Bool)
   case clean(categories: Set<String>, preserveBootState: Bool)
-  case boot, shutdown, erase, delete, measure, analyze
+  case boot, shutdown, restart, erase, delete, measure, analyze, inspectApps, openPhotos
+  case manageApp(InstalledSimulatorApp, AppStorageAction)
   case rename(String)
   case clone(String)
 
@@ -150,17 +153,23 @@ enum SimulatorAction: Sendable, Equatable {
   var isClone: Bool { if case .clone = self { true } else { false } }
   var title: String {
     switch self {
-    case .slim: "Applying service profile…"
+    case .slim(let profile):
+      profile.withoutRestart ? "Applying profile without restart…" : "Applying service profile…"
     case .preview: "Previewing service changes…"
     case .restoreSaved: "Restoring saved state…"
     case .restore: "Restoring services…"
     case .clean: "Cleaning disk data…"
+    case .fullSlimAndClean: "Applying Full Slim & cleaning disk…"
     case .boot: "Booting simulator…"
     case .shutdown: "Shutting down simulator…"
+    case .restart: "Restarting simulator…"
     case .erase: "Erasing simulator…"
     case .delete: "Deleting simulator…"
     case .measure: "Measuring memory…"
     case .analyze: "Analyzing disk usage…"
+    case .inspectApps: "Measuring installed apps…"
+    case .openPhotos: "Opening simulator Photos…"
+    case .manageApp(_, let action): action.title + "…"
     case .rename: "Renaming simulator…"
     case .clone: "Cloning simulator…"
     }

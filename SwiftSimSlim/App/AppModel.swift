@@ -7,7 +7,10 @@ final class AppModel {
   private(set) var devices: [SimulatorDevice] = []
   private(set) var categories: [SlimCategory] = []
   private(set) var diskCleanupCategories: [DiskCleanupCategory] = []
+  private(set) var appStorageSnapshots: [String: SimulatorAppStorage] = [:]
+  private(set) var appStorageErrors: [String: String] = [:]
   private(set) var diskCleanupPlans: [String: SimulatorDiskCleanupPlan] = [:]
+  private(set) var diskCleanupResults: [String: SimulatorDiskCleanupResult] = [:]
   private(set) var measurements: [String: SimulatorMeasurement] = [:]
   private(set) var diskSizes: [String: SimulatorDiskMeasurement] = [:]
   private(set) var diskSizeLoadingUDIDs: Set<String> = []
@@ -20,6 +23,7 @@ final class AppModel {
   @ObservationIgnored private let defaults: UserDefaults
   @ObservationIgnored private let automaticallyMeasureDisk: Bool
   private(set) var activity: [ActivityEntry] = []
+  private(set) var serviceRestartRequired: [String: [String]] = [:]
   private(set) var servicePlans: [String: ServiceChangePlan] = [:]
   private(set) var serviceBackups: [String: ServiceStateBackup] = [:]
   @ObservationIgnored private let backupStore: ServiceBackupStore
@@ -30,6 +34,7 @@ final class AppModel {
   var keptServiceLabels: Set<String> = []
   var selectedDiskCleanupCategoryIDs: Set<String> = []
   var preserveBootState = true
+  var requestsFullSlimAndClean = false
   var presentedError: PresentedError?
   var serviceBackupExport: ServiceBackupExport?
 
@@ -96,7 +101,10 @@ final class AppModel {
       return model
     }
 
-    static func preview() -> AppModel {
+    static func preview(
+      diskPlan: SimulatorDiskCleanupPlan? = nil,
+      cleanupResult: SimulatorDiskCleanupResult? = nil
+    ) -> AppModel {
       let model = AppModel(deviceSets: [])
       model.hasLoaded = true
       model.categories = ServiceCatalog.categories
@@ -120,7 +128,88 @@ final class AppModel {
         "Boot complete. Verifying services…",
       ]
       model.lastUpdated = Date()
+      if let diskPlan {
+        model.diskCleanupPlans[model.devices[0].udid] = diskPlan
+        model.selectedDiskCleanupCategoryIDs = Set(diskPlan.categories.map(\.id))
+        for entry in model.operations.entries.values { model.operations.finish(entry.ticket) }
+      }
+      if let cleanupResult { model.diskCleanupResults[model.devices[0].udid] = cleanupResult }
       return model
+    }
+    static func diskLayoutUITest(root: String) throws -> AppModel {
+      let directory = URL(fileURLWithPath: root).standardizedFileURL
+      guard directory.lastPathComponent.hasPrefix("SwiftSimSlim-ui-disk-"),
+        FileManager.default.fileExists(atPath: directory.path)
+      else { throw SimulatorError("Invalid disk layout fixture directory.") }
+      var devices: [[String: Any]] = []
+      let names = [
+        "18 Pro 1", "18 Pro 2", "18 Pro 3", "18 Pro 4", "18 Pro 5", "iPad Pro 13-inch (M5)",
+        "iPhone Duo",
+      ]
+      for (index, name) in names.enumerated() {
+        let udid = String(format: "00000000-0000-0000-0000-%012d", index + 101)
+        let data = directory.appendingPathComponent(udid + "/data")
+        let caches = data.appendingPathComponent("Library/Caches")
+        try FileManager.default.createDirectory(at: caches, withIntermediateDirectories: true)
+        for number in 0..<100 {
+          try Data(repeating: UInt8(index), count: 8192).write(
+            to: caches.appendingPathComponent("cache-\(number)"))
+        }
+        if index == 0 {
+          for (number, name) in ["Music Demo", "Notes Demo", "Browser Demo"].enumerated() {
+            let bundleID = "com.example.demo\(number)"
+            let bundleContainer = data.appendingPathComponent(
+              "Containers/Bundle/Application/" + UUID().uuidString)
+            let privateContainer = data.appendingPathComponent(
+              "Containers/Data/Application/" + UUID().uuidString)
+            let bundle = bundleContainer.appendingPathComponent("Demo.app")
+            for directory in [bundle, privateContainer] {
+              try FileManager.default.createDirectory(
+                at: directory, withIntermediateDirectories: true)
+            }
+            for container in [bundleContainer, privateContainer] {
+              try PropertyListSerialization.data(
+                fromPropertyList: ["MCMMetadataIdentifier": bundleID], format: .binary, options: 0
+              ).write(to: container.appendingPathComponent(AppStorageStore.metadata))
+            }
+            try PropertyListSerialization.data(
+              fromPropertyList: ["CFBundleIdentifier": bundleID, "CFBundleDisplayName": name],
+              format: .binary, options: 0
+            ).write(to: bundle.appendingPathComponent("Info.plist"))
+            for (path, bytes) in [
+              (bundle.appendingPathComponent("asset"), 1_048_576 * (3 - number)),
+              (privateContainer.appendingPathComponent("Documents/sample.txt"), 262_144),
+              (
+                privateContainer.appendingPathComponent("Library/Application Support/sample.db"),
+                65_536
+              ),
+            ] {
+              try FileManager.default.createDirectory(
+                at: path.deletingLastPathComponent(), withIntermediateDirectories: true)
+              try Data(repeating: UInt8(number), count: bytes).write(to: path)
+            }
+          }
+        }
+        devices.append([
+          "udid": udid, "name": name, "state": "Shutdown", "isAvailable": true,
+          "dataPath": data.path,
+        ])
+      }
+      let json = try JSONSerialization.data(withJSONObject: [
+        "devices": ["com.apple.CoreSimulator.SimRuntime.iOS-27-2": devices]
+      ])
+      let runner = CommandRunner(executor: { _, args in
+        guard args.contains("list") && args.contains("devices") else {
+          throw SimulatorError("Layout fixture permits device-list reads only.")
+        }
+        try await Task.sleep(for: .seconds(2))
+        return CommandResult(data: json, errorData: Data(), status: 0)
+      })
+      return AppModel(
+        deviceSets: [directory.path], runner: runner,
+        defaults: UserDefaults(suiteName: directory.lastPathComponent)!,
+        backupStore: ServiceBackupStore(directory: directory.appendingPathComponent("backups")),
+        writeOverrides: { _, _ in throw SimulatorError("No profile writes in layout fixture.") })
     }
     static func parallelPreview() async throws -> AppModel {
       let model = preview()
@@ -205,9 +294,33 @@ final class AppModel {
     diskCleanupBytes(for: selectedDevices, categoryIDs: selectedDiskCleanupCategoryIDs)
   }
 
+  var selectedDiskCleanupResultText: String? {
+    let devices = selectedDevices
+    guard !devices.isEmpty, devices.allSatisfy({ diskCleanupResults[$0.udid] != nil }) else {
+      return nil
+    }
+    let bytes = devices.reduce(Int64(0)) { $0 + (diskCleanupResults[$1.udid]?.reclaimedBytes ?? 0) }
+    let size = ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+    return "Last successful cleanup: \(size) removed"
+  }
+
+  var selectedDiskTotalSizeText: String {
+    let bytes = selectedDevices.reduce(Int64(0)) {
+      $0 + (diskCleanupPlans[$1.udid]?.totalBytes ?? 0)
+    }
+    return ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+  }
+
   var diskStorageRows: [SimulatorDiskStorageMeasurement] {
     guard let device = selectedDevices.first else { return [] }
-    return diskCleanupPlans[device.udid]?.storage ?? []
+    guard let plan = diskCleanupPlans[device.udid] else { return [] }
+    return [
+      .init(
+        id: "apps-and-data", name: "Apps & Data",
+        description: "Installed apps and their support data. Documents are listed separately.",
+        bytes: plan.storageBytes(for: "installed-apps") + plan.storageBytes(for: "app-data")
+      )
+    ] + plan.storage.filter { $0.id != "installed-apps" && $0.id != "app-data" }
   }
 
   var canCleanDiskSelection: Bool {
@@ -267,6 +380,7 @@ final class AppModel {
         let available = Set(devices.map(\.udid))
         selectedUDIDs.formIntersection(available)
         diskCleanupPlans = diskCleanupPlans.filter { available.contains($0.key) }
+        diskCleanupResults = diskCleanupResults.filter { available.contains($0.key) }
         updateMeasurementsFromDevices()
         updateStateCacheFromLiveDevices()
         lastUpdated = Date()
@@ -398,8 +512,9 @@ final class AppModel {
 
   func diskStorageSizeText(for storageID: String) -> String {
     guard diskAnalysisCoversSelection else { return isAnalyzingDisk ? "Analyzing…" : "Pending" }
-    let bytes = selectedDevices.reduce(0) {
-      $0 + (diskCleanupPlans[$1.udid]?.storageBytes(for: storageID) ?? 0)
+    let ids = storageID == "apps-and-data" ? ["installed-apps", "app-data"] : [storageID]
+    let bytes = selectedDevices.reduce(Int64(0)) { total, device in
+      total + ids.reduce(0) { $0 + (diskCleanupPlans[device.udid]?.storageBytes(for: $1) ?? 0) }
     }
     return ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
   }
@@ -428,6 +543,10 @@ final class AppModel {
     await run(.clean(categories: chosen, preserveBootState: preserveBootState), on: devices)
   }
 
+  func fullSlimAndClean(_ devices: [SimulatorDevice], preserveBootState: Bool) async {
+    await run(.fullSlimAndClean(preserveBootState: preserveBootState), on: devices)
+  }
+
   func measure(_ device: SimulatorDevice) async {
     guard device.isBooted else { return }
     await run(.measure, on: [device])
@@ -449,6 +568,24 @@ final class AppModel {
       uniqueKeysWithValues: plans.filter(\.isLive).map { ($0.device.udid, $0.current) })
     await run(.slim(reviewed), on: devices)
   }
+
+  func inspectApps(_ device: SimulatorDevice) async {
+    appStorageSnapshots.removeValue(forKey: device.udid)
+    appStorageErrors.removeValue(forKey: device.udid)
+    await run(.inspectApps, on: [device])
+  }
+
+  func manageApp(_ app: InstalledSimulatorApp, action: AppStorageAction, on device: SimulatorDevice)
+    async
+  {
+    guard app.udid == device.udid else { return }
+    appStorageErrors.removeValue(forKey: device.udid)
+    await run(.manageApp(app, action), on: [device])
+  }
+
+  func openPhotos(_ device: SimulatorDevice) async { await run(.openPhotos, on: [device]) }
+
+  func restartSimulator(_ device: SimulatorDevice) async { await run(.restart, on: [device]) }
 
   func restoreSavedState(for device: SimulatorDevice) async {
     guard let backup = serviceBackups[device.udid] else { return }
@@ -500,7 +637,8 @@ final class AppModel {
       return
     }
     operationRevision += 1
-    let batch = BatchProgress(total: tickets.count, action: action.title)
+    let batch = BatchProgress(
+      total: tickets.count, action: action.title, isDiskAnalysis: action == .analyze)
     batches.append(batch)
     var failures = 0
     await withTaskGroup(of: Bool.self) { group in
@@ -542,37 +680,76 @@ final class AppModel {
         runner: runner, deviceSets: base.deviceSets, writeOverrides: base.writeOverrides)
       record(.info, "\(device.name): \(ticket.action.title)")
       switch ticket.action {
+      case .inspectApps:
+        appStorageSnapshots[device.udid] = try await backend.appStorage(udid: device.udid)
+      case .manageApp(let app, let action):
+        appStorageSnapshots.removeValue(forKey: device.udid)
+        try await backend.manageApp(app, action: action)
+        appStorageSnapshots[device.udid] = try await backend.appStorage(udid: device.udid)
+      case .openPhotos:
+        try await backend.openPhotos(udid: device.udid)
       case .preview(let profile):
         let desired = try ServiceCatalog.desired(except: profile.categories, keep: profile.labels)
         servicePlans[device.udid] = try await backend.previewProfile(
           udid: device.udid, desired: desired)
       case .slim(let profile):
         let store = backupStore
-        try await backend.configureWithBackup(
-          udid: device.udid,
-          desired: ServiceCatalog.desired(except: profile.categories, keep: profile.labels),
-          preserveBootState: profile.preserveBootState,
-          expectedCurrent: profile.reviewedStates[device.udid],
-          save: { try await store.save($0) })
+        if profile.withoutRestart {
+          let result = try await backend.configureLiveWithBackup(
+            udid: device.udid,
+            desired: ServiceCatalog.desired(except: profile.categories, keep: profile.labels),
+            expectedCurrent: profile.reviewedStates[device.udid],
+            save: { try await store.save($0) })
+          serviceRestartRequired[device.udid] = result.restartRequired
+        } else {
+          try await backend.configureWithBackup(
+            udid: device.udid,
+            desired: ServiceCatalog.desired(except: profile.categories, keep: profile.labels),
+            preserveBootState: profile.preserveBootState,
+            expectedCurrent: profile.reviewedStates[device.udid],
+            save: { try await store.save($0) })
+          serviceRestartRequired.removeValue(forKey: device.udid)
+        }
         setCachedDisabled(profile.disabledCount, for: device.udid)
       case .restore(let preserve):
         let store = backupStore
         try await backend.configureWithBackup(
           udid: device.udid, desired: [], preserveBootState: preserve,
           save: { try await store.save($0) })
+        serviceRestartRequired.removeValue(forKey: device.udid)
         setCachedDisabled(0, for: device.udid)
       case .restoreSaved(let backup):
         guard backup.udid == device.udid else {
           throw SimulatorError("Saved state belongs to a different simulator.")
         }
         try await backend.restoreSavedState(backup)
+        serviceRestartRequired.removeValue(forKey: device.udid)
         setCachedDisabled(
           backup.disabled.intersection(ServiceCatalog.slimmable).count, for: device.udid)
+      case .fullSlimAndClean(let preserve):
+        let store = backupStore
+        let result = try await backend.fullSlimAndClean(
+          udid: device.udid, preserveBootState: preserve,
+          save: { try await store.save($0) })
+        serviceRestartRequired.removeValue(forKey: device.udid)
+        setCachedDisabled(ServiceCatalog.slimmable.count, for: device.udid)
+        diskCleanupResults[device.udid] = result
+        record(.success, "\(device.name): Full Slim applied; reclaimed \(result.reclaimedText)")
       case .clean(let categories, let preserve):
         let result = try await backend.cleanDisk(
           udid: device.udid, categoryIDs: categories,
           preserveBootState: preserve)
+        diskCleanupResults[device.udid] = result
         record(.success, "\(device.name): reclaimed \(result.reclaimedText)")
+      case .restart:
+        let raw = try await backend.profileDevice(device.udid)
+        guard raw.isBooted else { throw SimulatorError("Simulator is no longer booted.") }
+        try await backend.stop(raw)
+        try await backend.bootAndWait(raw)
+        let loaded = try await backend.loadedServices(raw)
+        serviceRestartRequired[device.udid] = (serviceRestartRequired[device.udid] ?? []).filter {
+          !loaded.contains($0)
+        }
       case .boot: _ = try await backend.boot(udid: device.udid)
       case .shutdown: _ = try await backend.shutdown(udid: device.udid)
       case .rename(let name): _ = try await backend.rename(udid: device.udid, name: name)
@@ -587,6 +764,7 @@ final class AppModel {
         try await backupStore.remove(device.udid)
         serviceBackups.removeValue(forKey: device.udid)
         measurements.removeValue(forKey: device.udid)
+        serviceRestartRequired.removeValue(forKey: device.udid)
         setCachedDisabled(0, for: device.udid)
       case .delete:
         _ = try await backend.delete(udid: device.udid)
@@ -594,6 +772,7 @@ final class AppModel {
         serviceBackups.removeValue(forKey: device.udid)
         measurements.removeValue(forKey: device.udid)
         diskSizes.removeValue(forKey: device.udid)
+        diskCleanupResults.removeValue(forKey: device.udid)
         removeCachedDisabled(for: device.udid)
         selectedUDIDs.remove(device.udid)
         self.devices.removeAll { $0.udid == device.udid }
@@ -602,16 +781,36 @@ final class AppModel {
         measurements[device.udid] = result
         record(.success, "\(device.name): \(result.memoryText), \(result.processes) processes")
       case .analyze:
-        diskCleanupPlans[device.udid] = try await backend.diskCleanupPlan(udid: device.udid)
+        let plan = try await backend.diskCleanupPlan(udid: device.udid)
+        diskCleanupPlans[device.udid] = plan
+        diskSizes[device.udid] = .init(bytes: plan.totalBytes)
       }
-      if ticket.action != .analyze && ticket.action != .measure {
+      if ticket.action != .analyze && ticket.action != .measure && ticket.action != .inspectApps {
         diskCleanupPlans.removeValue(forKey: device.udid)
       }
-      record(.success, "\(device.name): \(ticket.action.title) Done")
+      if let pending = serviceRestartRequired[device.udid], !pending.isEmpty {
+        record(
+          .info,
+          "\(device.name): enabled but not loaded; restart may be needed: "
+            + pending.joined(separator: ", "))
+      } else {
+        record(.success, "\(device.name): \(ticket.action.title) Done")
+      }
       succeeded = true
     } catch is CancellationError {
+      if case .manageApp = ticket.action {
+        appStorageErrors[device.udid] =
+          "Operation cancelled. Some files may already have been removed; refresh the app list."
+      }
+      if ticket.action == .inspectApps { appStorageErrors[device.udid] = "App scan cancelled." }
       record(.info, "\(device.name): operation cancelled")
     } catch {
+      if case .manageApp = ticket.action {
+        appStorageErrors[device.udid] = error.localizedDescription
+      }
+      if ticket.action == .inspectApps || ticket.action == .openPhotos {
+        appStorageErrors[device.udid] = error.localizedDescription
+      }
       // Concurrent errors stay in Activity instead of interrupting unrelated work with alerts.
       recordFailure(
         "\(device.name): \(ticket.action.title) \(error.localizedDescription)", present: false)
@@ -620,7 +819,9 @@ final class AppModel {
     operationRevision += 1
     if let index = batches.firstIndex(where: { $0.id == batchID }) { batches[index].completed += 1 }
     // Release the permit before refreshing; each batch retains independent progress.
-    if ticket.action != .analyze && ticket.action != .measure { await refresh() }
+    if ticket.action != .analyze && ticket.action != .measure && ticket.action != .inspectApps {
+      await refresh()
+    }
     return succeeded
   }
 

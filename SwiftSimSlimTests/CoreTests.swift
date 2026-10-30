@@ -100,7 +100,7 @@ struct Fixture {
   for file in [documents, media, external, bundle] { #expect(DiskStore.exists(file)) }
   #expect(throws: SimulatorError.self) { try DiskStore.clear(data, target: link) }
   #expect(throws: SimulatorError.self) { try DiskStore.clear(data, target: data) }
-  #expect(throws: SimulatorError.self) { try DiskStore.selection(["required-siri-assets"]) }
+  #expect(throws: SimulatorError.self) { try DiskStore.selection(["unknown-system-path"]) }
   #expect(throws: SimulatorError.self) { try DiskStore.selection([]) }
 }
 
@@ -202,14 +202,31 @@ actor FakeSimulator {
   var disabled: Set<String> = []
   var commands: [[String]] = []
   var loseOverrides = false
+  let dataPath: String?
   func writeOverrides(_ desired: Set<String>) { disabled = desired }
-  init(loseOverrides: Bool = false) { self.loseOverrides = loseOverrides }
+  init(loseOverrides: Bool = false, dataPath: String? = nil) {
+    self.loseOverrides = loseOverrides
+    self.dataPath = dataPath
+  }
   func execute(_ executable: String, _ args: [String]) throws -> CommandResult {
     commands.append(args)
     var output = ""
     if args.contains("list") {
       output =
         "{\"devices\":{\"com.apple.CoreSimulator.SimRuntime.iOS-26-0\":[{\"udid\":\"\(udid)\",\"name\":\"Fixture\",\"state\":\"\(state)\",\"isAvailable\":true}]}}"
+      if let dataPath {
+        let json: [String: Any] = [
+          "devices": [
+            "com.apple.CoreSimulator.SimRuntime.iOS-26-0": [
+              [
+                "udid": udid, "name": "Fixture", "state": state, "isAvailable": true,
+                "dataPath": dataPath,
+              ]
+            ]
+          ]
+        ]
+        output = String(decoding: try JSONSerialization.data(withJSONObject: json), as: UTF8.self)
+      }
     } else if args.contains("print-disabled") {
       output =
         "disabled services = {\n"
