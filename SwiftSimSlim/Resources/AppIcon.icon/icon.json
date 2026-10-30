@@ -1,26 +1,44 @@
 {
-  "fill" : {
-    "solid" : "extended-srgb:0.00000,0.00000,0.00000,1.00000"
+  "fill": {
+    "solid": "extended-srgb:0.00000,0.00000,0.00000,1.00000"
   },
-  "groups" : [
+  "groups": [
     {
-      "layers" : [
+      "layers": [
         {
-          "image-name" : "Icon.png",
-          "name" : "Icon"
+          "image-name": "RAM.png",
+          "name": "Green RAM",
+          "position": {
+            "scale": 1.08,
+            "translation-in-points": [
+              0,
+              -47
+            ]
+          }
+        },
+        {
+          "image-name": "Phone.svg",
+          "name": "iPhone template",
+          "position": {
+            "scale": 1.2,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
         }
       ],
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
       },
-      "translucency" : {
-        "enabled" : false,
-        "value" : 0
+      "translucency": {
+        "enabled": false,
+        "value": 0
       }
     }
   ],
-  "supported-platforms" : {
-    "squares" : "shared"
+  "supported-platforms": {
+    "squares": "shared"
   }
 }
