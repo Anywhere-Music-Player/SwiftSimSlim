@@ -38,6 +38,10 @@ SwiftSimSlim calls Apple’s `simctl` directly, with an in-process Swift backend
 | Independent operations | Follow separate progress and logs for each device, with at most two heavy operations at once. |
 | Boot-state preservation | Return a simulator to its original Booted or Shutdown state after a successful profile operation. |
 
+## New in 26.1.1
+
+Five additional services join Full Slim: a new **Device Management** category, plus **App Clips** and **accessibility asset downloads** under Other Background Services. Individual services and categories can be kept enabled. See the [26.1.1 release notes](docs/releases/26.1.1.md).
+
 ## New in 26.1
 
 Full Slim & Clean, per-app storage management, a complete disk breakdown, optional wallpaper/Siri/model cleanup, restart-free service changes, and a new simulator-and-RAM icon. Disk selection and analysis keep row heights, category order, and the toolbar layout stable. See the [release notes](docs/releases/26.1.md).
@@ -64,7 +68,7 @@ These are captures of the running app with seven synthetic simulator entries and
 
 You need a Mac with Xcode and its simulator tools, plus an installed iOS Simulator runtime. **Persistent slimming requires iOS 18.5 or later.** The project uses Swift 6 and an Icon Composer app icon; use Xcode capable of opening those project resources. See the [verification matrix](#safety-and-test-matrix) for the recorded environment and its limits.
 
-The published **26.1** release provides source archives, with no prebuilt app attached. You can [download the release source](https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases/latest) or clone the current development version:
+The published **26.1.1** release provides source archives, with no prebuilt app attached. You can [download the release source](https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases/latest) or clone the current development version:
 
 ```sh
 git clone https://github.com/Anywhere-Music-Player/SwiftSimSlim.git
@@ -72,7 +76,7 @@ cd SwiftSimSlim
 open SwiftSimSlim.xcodeproj
 ```
 
-In Xcode, select **SwiftSimSlim → My Mac**, then press **Cmd-R** to build and launch. The 26.1 source release includes the features described below.
+In Xcode, select **SwiftSimSlim → My Mac**, then press **Cmd-R** to build and launch. The 26.1.1 source release includes the features described below.
 
 ### Apply your first profile
 
@@ -145,6 +149,12 @@ Select one simulator and use **Service State**, or its row menu:
 Restoration only touches the current allowlist, always enables required compatibility services, and preserves current unmanaged overrides. Unmanaged labels in the export are informational. The snapshot is not an app-data backup and cannot undo Erase or disk cleanup. Successful Erase/Delete removes that device’s recovery point. Restoration rejects a mismatched UUID, device set, or runtime.
 
 On failure, the original boot state is recovered when possible and the saved service state remains available for explicit restoration. Partially applied service changes are **not automatically rolled back**. Activity reports recovery failures too; inspect the log before retrying.
+
+## Additional service controls
+
+Version 26.1.1 adds **Device Management** (three declarative management and managed-asset services), plus **App Clips** and **accessibility asset downloads** in **Other Background Services**, following [upstream #66](https://github.com/MobAI-App/simslim/pull/66). Full Slim includes all five; retain the category or individual services when your app needs these features. Disabling them prevents the corresponding management workflows, App Clips, or accessibility asset downloads from working. Core `profiled` and `mdmd` services remain outside the allowlist.
+
+Category memory estimates come from upstream and are approximate; savings and compatibility of these additions have not yet been measured on a real simulator in this app. This changes the service profile, not disk cleanup rules.
 
 ## Apply a profile without restarting
 

@@ -376,19 +376,39 @@ enum ServiceCatalog {
         "com.apple.triald": "Manages system feature experiments and configurations.",
       ], alwaysEnabled: []),
     .init(
-      id: "other", name: "Other Background Services",
-      description: "Wallet, business services, assets, and miscellaneous background daemons.",
+      id: "mdm", name: "Device Management",
+      description: "Declarative device management and managed asset services.",
       downside:
-        "Wallet, merchant, business, asset, and miscellaneous background services are unavailable.",
-      approxMemoryMB: 195,
+        "Declarative device management, and MDM or configuration-profile workflows that use it, will not work.",
+      approxMemoryMB: 10,
+      labels: [
+        "com.apple.remotemanagementd", "com.apple.RemoteManagementAgent",
+        "com.apple.managedassetsd",
+      ],
+      serviceDescriptions: [
+        "com.apple.remotemanagementd": "Coordinates declarative device management.",
+        "com.apple.RemoteManagementAgent": "Applies declarative device management configurations.",
+        "com.apple.managedassetsd": "Downloads and manages assets for device management.",
+      ], alwaysEnabled: []),
+    .init(
+      id: "other", name: "Other Background Services",
+      description:
+        "Wallet, App Clips, business services, assets, and miscellaneous background daemons.",
+      downside:
+        "Wallet, App Clips, accessibility asset downloads, merchant, business, and miscellaneous background services are unavailable.",
+      approxMemoryMB: 225,
       labels: [
         "com.apple.financed", "com.apple.passd", "com.apple.merchantd", "com.apple.coreidvd",
         "com.apple.businessservicesd", "com.apple.deviceaccessd", "com.apple.replicatord",
         "com.apple.linkd", "com.apple.ind", "com.apple.storagedatad", "com.apple.StatusKitAgent",
         "com.apple.countryd", "com.apple.mobileassetd",
         "com.apple.managedconfiguration.passcodenagd",
+        "com.apple.accessibility.axassetsd", "com.apple.ClipServices.clipserviced",
       ],
       serviceDescriptions: [
+        "com.apple.ClipServices.clipserviced": "Downloads, launches, and manages App Clips.",
+        "com.apple.accessibility.axassetsd":
+          "Downloads accessibility assets such as speech voices.",
         "com.apple.StatusKitAgent": "Shares Focus, presence, and status between devices.",
         "com.apple.businessservicesd": "Supports Apple business messaging and services.",
         "com.apple.coreidvd": "Manages supported digital identity credentials.",

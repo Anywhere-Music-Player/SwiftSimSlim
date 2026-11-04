@@ -8,7 +8,8 @@ import Testing
     "com.apple.nanoregistryd", "com.apple.nanoregistrylaunchd", "com.apple.nanoprefsyncd.2",
     "com.apple.nanotimekitcompaniond", "com.apple.nanobackupd", "com.apple.sleepd",
     "com.apple.appprotectiond", "com.apple.ManagedSettingsAgent",
-    "com.apple.managedconfiguration.profiled", "com.apple.mobiletimerd", "com.apple.routined",
+    "com.apple.managedconfiguration.profiled", "com.apple.mdmd",
+    "com.apple.mobiletimerd", "com.apple.routined",
     "com.apple.biomed", "com.apple.biomesyncd", "com.apple.dmd", "com.apple.donotdisturbd",
   ]
   #expect(ServiceCatalog.managed.isDisjoint(with: forbidden))
@@ -37,6 +38,41 @@ import Testing
   #expect(delta.disable == [label])
   #expect(delta.enable == [required])
   #expect(throws: SimulatorError.self) { try ServiceCatalog.desired(except: ["unknown"], keep: []) }
+}
+
+@Test func upstreamManagementAndAssetServicesRespectRetainedSelections() throws {
+  let management: Set<String> = [
+    "com.apple.remotemanagementd", "com.apple.RemoteManagementAgent", "com.apple.managedassetsd",
+  ]
+  let assets: Set<String> = [
+    "com.apple.accessibility.axassetsd", "com.apple.ClipServices.clipserviced",
+  ]
+  let added = management.union(assets)
+  let full = try ServiceCatalog.desired(except: [], keep: [])
+  #expect(added.isSubset(of: full))
+
+  let keepManagement = try ServiceCatalog.desired(except: ["mdm"], keep: [])
+  #expect(full.subtracting(keepManagement) == management)
+  #expect(assets.isSubset(of: keepManagement))
+  let keepOther = try ServiceCatalog.desired(except: ["other"], keep: [])
+  #expect(keepOther.isDisjoint(with: assets))
+  #expect(management.isSubset(of: keepOther))
+  for label in added {
+    let keepOne = try ServiceCatalog.desired(except: [], keep: [label])
+    #expect(full.subtracting(keepOne) == [label])
+  }
+
+  // A legacy Full Slim profile gains only the new labels. Unmanaged overrides
+  // stay untouched, even when the user later retains these categories.
+  let unmanaged: Set<String> = ["com.apple.mdmd", "com.apple.managedconfiguration.profiled"]
+  let upgrade = ServiceCatalog.delta(
+    current: full.subtracting(added).union(unmanaged), desired: full)
+  #expect(Set(upgrade.disable) == added)
+  #expect(upgrade.enable.isEmpty)
+  let retained = try ServiceCatalog.desired(except: ["mdm", "other"], keep: [])
+  let restore = ServiceCatalog.delta(current: full.union(unmanaged), desired: retained)
+  #expect(Set(restore.enable) == full.subtracting(retained))
+  #expect(restore.disable.isEmpty)
 }
 
 @Test(arguments: [

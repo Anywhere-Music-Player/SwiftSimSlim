@@ -1,3 +1,13 @@
+# Оновлення upstream — 2026-11-04
+
+Оригінал оновлено fast-forward від `d594c23` до `7e374b3`. Перенесено [#66 / ab8ce9f](https://github.com/MobAI-App/simslim/commit/ab8ce9f01951c1b13fed92bedea7919d8942f841): категорію `mdm` із `remotemanagementd`, `RemoteManagementAgent`, `managedassetsd`; `accessibility.axassetsd` та `ClipServices.clipserviced` додано до `other`. Оновлено пояснення наслідків та приблизні upstream-оцінки пам'яті (10 MB для `mdm`, 225 MB для `other`). `profiled` і `mdmd` залишаються поза allowlist; required-enabled служби не змінено.
+
+Додано регресію переходу зі старого Full Slim, збереження категорій та окремих служб, відновлення керованих служб і збереження unmanaged overrides. Реальні симулятори не змінювалися; upstream-замір економії пам'яті не є результатом перевірки SwiftSimSlim.
+
+Перевірка: Xcode `SwiftSimSlim / My Mac` — build-for-testing успішний; 59 цільових тестових випадків пройшли, без пропусків і помилок. Перевірено каталог, profile lifecycle, backup/restore, Full Slim & Clean і live-service logic на підставному виконавці. Візуальна перевірка та live-runtime acceptance не виконувалися.
+
+[#65 / cfa980b](https://github.com/MobAI-App/simslim/commit/cfa980b33e1b509c2a274d6ae1d58688f0577585) — автоматична підготовка до першого boot — залишається окремою можливістю. Потрібні явний вибір пристроїв або opt-in набору, збереження початкового offline-стану та перевірка після boot. Watcher upstream не перенесено. [#67 / 7e374b3](https://github.com/MobAI-App/simslim/commit/7e374b3839d49608a681d1f8b9ca0dd83d35189e) прогріває fake xcrun перед Go-тестом; відповідні Swift-регресії використовують in-process executor і цього виправлення не потребують.
+
 # Режим без перезапуску — 2026-10-28
 
 На основі upstream #62 та попереднього `on --no-reboot` додано застосування повного профілю до запущеного симулятора через preview. Окремий перемикач, типово вимкнений; stopped/ambiguous/stale targets відхиляються до мутацій. Збереження початкового стану обов’язкове.
