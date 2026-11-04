@@ -62,3 +62,43 @@ private func checkFullSlimCleanup(_ scenario: String) async throws {
   #expect(!commands.contains { $0.contains("erase") || $0.contains("delete") })
   #expect(commands.allSatisfy { $0.prefix(3) == ["simctl", "--set", set] })
 }
+
+@Test func fullSlimCleanupHonorsUncheckedSteps() async throws {
+  for scenario in ["cache-only", "services-only", "neither", "invalid"] {
+    let files = try Fixture()
+    defer { files.remove() }
+    let data = try files.directory("data").resolvingSymlinksInPath()
+    let cache = try files.file("data/Library/Caches/disposable")
+    let speech = try files.file(
+      "data/private/var/MobileAsset/AssetsV2/com_apple_MobileAsset_UAF_Siri_TextToSpeech/model")
+    let document = try files.file("data/Containers/Data/Application/A/Documents/keep")
+    let fake = FakeSimulator(dataPath: data.path)
+    let original: Set<String> = ["unmanaged"]
+    await fake.writeOverrides(original)
+    let backend = SwiftSimSlimBackend(
+      runner: CommandRunner(executor: { try await fake.execute($0, $1) }),
+      deviceSets: ["/synthetic-full-slim-selection"],
+      writeOverrides: { _, desired in await fake.writeOverrides(desired.union(original)) })
+    let categories: Set<String> =
+      scenario == "cache-only" ? ["caches"] : scenario == "invalid" ? ["unknown"] : []
+    do {
+      let result = try await backend.fullSlimAndClean(
+        udid: fake.udid, preserveBootState: true, applyFullSlim: scenario == "services-only",
+        categoryIDs: categories,
+        save: { _ in #expect(scenario == "services-only", "Unchecked profile must not run") })
+      #expect(scenario == "cache-only" || scenario == "services-only")
+      #expect(Set(result.categoryIds) == categories)
+      #expect(DiskStore.exists(cache) == (scenario != "cache-only"))
+      #expect(
+        await fake.disabled
+          == (scenario == "services-only" ? ServiceCatalog.slimmable.union(original) : original))
+      #expect(await fake.state == "Booted")
+    } catch {
+      #expect(scenario == "neither" || scenario == "invalid")
+      #expect(await fake.commands.isEmpty, "Invalid selection must fail before simulator commands")
+      #expect(DiskStore.exists(cache))
+    }
+    #expect(DiskStore.exists(speech))
+    #expect(DiskStore.exists(document))
+  }
+}

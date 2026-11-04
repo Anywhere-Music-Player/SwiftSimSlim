@@ -7,6 +7,8 @@ struct ProfileSidebar: View {
   @State private var serviceSearchText = ""
   @State private var appStorageDevice: SimulatorDevice?
   @State private var eraseDevice: SimulatorDevice?
+  @State private var blackWallpaper: WallpaperCleanupSelection?
+  @State private var wallpaperCleanup: WallpaperCleanupSelection?
   // The system application icon can remain cached after replacing a local build.
   private static let appIcon: NSImage =
     Bundle.main.url(forResource: "AppIcon", withExtension: "icns")
@@ -54,6 +56,7 @@ struct ProfileSidebar: View {
         .padding(16)
       }
       .frame(minHeight: 0, maxHeight: .infinity)
+      .accessibilityIdentifier("profile-sidebar-scroll")
     }
     .background(.regularMaterial)
   }
@@ -195,7 +198,14 @@ struct ProfileSidebar: View {
 
       VStack(alignment: .leading, spacing: 8) {
         ForEach(sortedDiskCategories) { category in
-          DiskCleanupCategoryToggle(category: category)
+          DiskCleanupCategoryToggle(
+            category: category,
+            onCleanWallpaper: {
+              wallpaperCleanup = WallpaperCleanupSelection(devices: model.selectedDevices)
+            },
+            onBlackWallpaper: {
+              blackWallpaper = WallpaperCleanupSelection(devices: model.selectedDevices)
+            })
         }
       }
 
@@ -222,6 +232,18 @@ struct ProfileSidebar: View {
       }
 
       Color.clear.frame(height: 0)
+        .sheet(item: $blackWallpaper) { selection in
+          BlackWallpaperConfirmationSheet(devices: selection.devices) { restoreBoot in
+            Task {
+              await model.enableBlackWallpaper(selection.devices, preserveBootState: restoreBoot)
+            }
+          }
+        }
+        .sheet(item: $wallpaperCleanup) { selection in
+          WallpaperCleanupConfirmationSheet(devices: selection.devices) {
+            Task { await model.cleanDisk(selection.devices, categoryIDs: ["wallpaper-cache"]) }
+          }
+        }
         .sheet(item: $appStorageDevice) { device in AppStorageView(device: device) }
         .sheet(item: $eraseDevice) { device in
           SimulatorDestructiveSheet(action: .erase, devices: [device]) {
@@ -265,6 +287,11 @@ struct ProfileSidebar: View {
   }
 }
 
+private struct WallpaperCleanupSelection: Identifiable {
+  let id = UUID()
+  let devices: [SimulatorDevice]
+}
+
 struct SidebarServiceSearch: View {
   @Binding var text: String
 
@@ -301,6 +328,8 @@ struct SidebarServiceSearch: View {
 struct DiskCleanupCategoryToggle: View {
   @Environment(AppModel.self) private var model
   let category: DiskCleanupCategory
+  var onCleanWallpaper: (() -> Void)?
+  var onBlackWallpaper: (() -> Void)?
 
   private var isSelected: Binding<Bool> {
     Binding(
@@ -344,6 +373,28 @@ struct DiskCleanupCategoryToggle: View {
           .font(.caption)
           .foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
+
+        if category.id == "wallpaper-cache", let onCleanWallpaper {
+          Button("Clean Wallpaper Cache…", role: .destructive, action: onCleanWallpaper)
+            .buttonStyle(.borderedProminent)
+            .tint(.red)
+            .fontWeight(.bold)
+            .disabled(
+              !model.canOperateOnSelection || !model.diskAnalysisCoversSelection
+                || model.diskCleanupBytes(
+                  for: model.selectedDevices, categoryIDs: ["wallpaper-cache"]) == 0
+            )
+        }
+
+        if category.id == "wallpaper-cache", let onBlackWallpaper {
+          Button(
+            "Disable Wallpapers…", role: .destructive, action: onBlackWallpaper
+          )
+          .buttonStyle(.borderedProminent)
+          .tint(.red)
+          .fontWeight(.bold)
+          .disabled(!model.canOperateOnSelection)
+        }
 
         if !category.canClean {
           Text("Unable to delete — iOS restores automatically on launch.")
@@ -647,7 +698,7 @@ struct AlwaysEnabledServiceRow: View {
     VStack(alignment: .leading, spacing: 14) {
       Text("Cleanup").font(.headline)
       if let category = DiskStore.categories.first(where: { $0.id == "wallpaper-cache" }) {
-        DiskCleanupCategoryToggle(category: category)
+        DiskCleanupCategoryToggle(category: category, onCleanWallpaper: {})
       }
       Text("Retained Storage").font(.headline)
       DiskStorageRow(

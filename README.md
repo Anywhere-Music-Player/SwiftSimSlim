@@ -30,13 +30,22 @@ SwiftSimSlim calls Apple’s `simctl` directly, with an in-process Swift backend
 | --- | --- |
 | Service profiles | Slim or re-enable allowlisted services while keeping required compatibility services enabled. |
 | Preview and recovery | Review planned changes, save the original service state, export it as JSON, and restore a saved profile. |
-| Full Slim & Clean | Apply the complete service profile and clean supported disk categories in one confirmed operation, preserving apps and their durable data. |
+| Full Slim & Clean | Choose the service profile and individual cleanup categories with compact checkboxes in a resizable confirmation. All start selected; apps and durable data are preserved. |
 | Disk analysis and cleanup | See where the full data-directory size goes; select caches, logs, temporary files, and optional downloaded assets or indexes. |
+| Wallpaper controls | Clean generated wallpaper textures, or explicitly disable wallpapers for a black background without deleting apps and their data. |
 | Apps & Data | List installed apps by size, uninstall an app, or selectively clear its Documents or other private data. |
 | Live service profiles | Apply a profile to an already booted simulator without an automatic restart, with readback verification and restart-needed reporting. |
 | Simulator management | Boot, shut down, rename, clone, erase, or delete individual simulators. |
 | Independent operations | Follow separate progress and logs for each device, with at most two heavy operations at once. |
 | Boot-state preservation | Return a simulator to its original Booted or Shutdown state after a successful profile operation. |
+
+## New in 26.1.2
+
+- **Clean Wallpaper Cache…** now includes accumulated Home Screen runtime textures, with confirmation and preservation of wallpaper originals and settings.
+- **Disable Wallpapers…** explicitly removes wallpaper originals, configuration, and snapshots and disables PosterBoard for a black background. Apps and their data are kept. This experimental mode was checked on iOS 27.2; it is separate from routine cleanup.
+- **Full Slim & Clean** has compact checkboxes, all selected initially. Uncheck the service profile or any cleanup category to skip it. Resize the confirmation by dragging its edges or corners; the list scrolls in a smaller window.
+
+See the [26.1.2 release notes](docs/releases/26.1.2.md) for behavior, verification, and limits.
 
 ## New in 26.1.1
 
@@ -58,9 +67,17 @@ These are captures of the running app with seven synthetic simulator entries and
 
 ![Apps and private data inventory](docs/images/swiftsimslim-apps-data.png)
 
-**Full Slim & Clean:** one confirmation for the full service profile and supported cleanup categories.
+**Full Slim & Clean:** resizable confirmation with compact, individually selectable steps. All are selected initially.
 
 ![Full Slim and Clean confirmation](docs/images/swiftsimslim-full-cleanup.png)
+
+**Wallpaper controls:** clean generated caches or explicitly disable wallpapers.
+
+![Wallpaper cleanup controls](docs/images/swiftsimslim-wallpaper-controls.png)
+
+**Disable Wallpapers:** separate confirmation explains the black background and which data is kept.
+
+![Disable Wallpapers confirmation](docs/images/swiftsimslim-disable-wallpapers.png)
 
 ## Quick start
 
@@ -68,7 +85,7 @@ These are captures of the running app with seven synthetic simulator entries and
 
 You need a Mac with Xcode and its simulator tools, plus an installed iOS Simulator runtime. **Persistent slimming requires iOS 18.5 or later.** The project uses Swift 6 and an Icon Composer app icon; use Xcode capable of opening those project resources. See the [verification matrix](#safety-and-test-matrix) for the recorded environment and its limits.
 
-The published **26.1.1** release provides source archives, with no prebuilt app attached. You can [download the release source](https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases/latest) or clone the current development version:
+The published **26.1.2** release provides source archives, with no prebuilt app attached. You can [download the release source](https://github.com/Anywhere-Music-Player/SwiftSimSlim/releases/latest) or clone the current development version:
 
 ```sh
 git clone https://github.com/Anywhere-Music-Player/SwiftSimSlim.git
@@ -76,7 +93,7 @@ cd SwiftSimSlim
 open SwiftSimSlim.xcodeproj
 ```
 
-In Xcode, select **SwiftSimSlim → My Mac**, then press **Cmd-R** to build and launch. The 26.1.1 source release includes the features described below.
+In Xcode, select **SwiftSimSlim → My Mac**, then press **Cmd-R** to build and launch. The 26.1.2 source release includes the features described below.
 
 ### Apply your first profile
 
@@ -177,10 +194,14 @@ Routine cleanup selects caches, logs, and temporary files. Additional categories
 | Category | Effect |
 | --- | --- |
 | Downloaded Language Data | Removes supported language downloads, which iOS can download again. |
-| Wallpaper & Poster Cache | Clears generated snapshots in recognized Apple poster layouts; keeps source content and wallpaper configuration. It does not set a black wallpaper. |
+| Wallpaper & Poster Cache | Clears generated snapshots in recognized Apple poster layouts, including accumulated `RuntimeSnapshot-…-home.atx` textures. Keeps source content and wallpaper configuration. It does not set a black wallpaper. |
 | Downloaded Siri & Speech Assets | Removes allowlisted per-device catalogs. Speech features may stop working until iOS restores them; custom voices and unknown catalogs stay protected. |
 | Other Downloaded System Models | Removes known model catalogs; dependent features may need to download them again. |
 | System Intelligence History & Indexes | Clears IntelligencePlatform, Biome, and DuetExpertCenter data and resets learned personalization. |
+
+The current development build also offers **Clean Wallpaper Cache…** directly in the wallpaper category. Its confirmation applies only to that category, regardless of other cleanup toggles. Files outside the recognized snapshot layouts stay under **Wallpaper Originals & Other Data**.
+
+**Disable Wallpapers…** is a separate, confirmed reset. It disables only PosterBoard, shuts down the simulator, removes the wallpaper store (including originals and Home/Lock Screen configuration), then boots to verify that PosterBoard remains disabled. Apps, app documents, preferences, app groups, photos, and shared runtimes are outside this reset. Previously stopped simulators are stopped again; reopening previously booted simulators is optional. This experimental mode was checked on iOS 27.2: disabling PosterBoard alone still allowed MercuryPoster snapshots to accumulate, while removing the wallpaper store as well kept the background black across restarts. Restoring services may recreate default wallpapers; deleted custom wallpapers are not restored. It is never included automatically in Full Slim & Clean or routine cache cleanup.
 
 Deleting assets does not disable services. iOS can regenerate caches, indexes, and downloads after boot even with optional services disabled. Remaining system data is not offered for blanket deletion; **Erase Simulator…** is a separate full reset that also deletes apps and user data.
 
@@ -190,7 +211,7 @@ Analysis runs off the main actor and reports progress in the disk-size column. C
 
 ## Full Slim & Clean
 
-Choose **Optimize → Full Slim & Clean…**, or the same action in the **Simulator** menu. After confirmation, the app saves the original service state, applies and verifies Full Slim, and cleans every supported category above, including the optional speech/model downloads and learned system history. A backup or profile failure stops before cleanup. Previously booted devices can be reopened afterward.
+Click **Full Slim & Clean** in the toolbar to open its confirmation directly, or use the same action in the **Simulator** menu. The resizable confirmation starts with Full Slim and every supported cleanup category checked, including optional speech/model downloads and learned system history. Uncheck any step to skip it. If Full Slim is selected, the app saves the original service state and applies and verifies the profile before cleaning the selected categories. A backup or profile failure stops before cleanup. Previously booted devices can be reopened afterward.
 
 Apps, Documents, photos, and app settings are preserved. This is not an Erase, does not promise zero RAM use, and cannot prevent all future downloads. The required compatibility services remain enabled. If you need selective cleanup, use **Clean Disk…** instead.
 

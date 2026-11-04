@@ -136,7 +136,8 @@ enum SimulatorAction: Sendable, Equatable {
   case preview(ServiceProfileSnapshot)
   case restoreSaved(ServiceStateBackup)
   case restore(preserveBootState: Bool)
-  case fullSlimAndClean(preserveBootState: Bool)
+  case blackWallpaper(preserveBootState: Bool)
+  case fullSlimAndClean(applyFullSlim: Bool, categories: Set<String>, preserveBootState: Bool)
   case clean(categories: Set<String>, preserveBootState: Bool)
   case boot, shutdown, restart, erase, delete, measure, analyze, inspectApps, openPhotos
   case manageApp(InstalledSimulatorApp, AppStorageAction)
@@ -160,6 +161,7 @@ enum SimulatorAction: Sendable, Equatable {
     case .restore: "Restoring services…"
     case .clean: "Cleaning disk data…"
     case .fullSlimAndClean: "Applying Full Slim & cleaning disk…"
+    case .blackWallpaper: "Disabling wallpapers…"
     case .boot: "Booting simulator…"
     case .shutdown: "Shutting down simulator…"
     case .restart: "Restarting simulator…"

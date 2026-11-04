@@ -29,7 +29,7 @@ enum DiskStore {
       defaultSelected: false, canClean: true),
     .init(
       id: "wallpaper-cache", name: "Wallpaper & Poster Cache",
-      description: "Generated wallpaper and Lock Screen snapshot caches.",
+      description: "Generated wallpaper snapshots, including accumulated Home Screen textures.",
       downside: "Wallpaper previews may temporarily disappear or load more slowly.",
       recovery:
         "iOS may regenerate snapshots; the cache can grow again. Originals and settings are kept.",
@@ -120,7 +120,7 @@ enum DiskStore {
     }
     return total
   }
-  static func compact(_ root: URL, _ candidates: [URL]) throws -> [URL] {
+  static func compact(_ root: URL, _ candidates: [URL], allowFiles: Bool = false) throws -> [URL] {
     var result: [URL] = []
     var resultPaths: [String] = []
     for candidate in Set(candidates.map(\.standardizedFileURL)).sorted(by: {
@@ -133,7 +133,7 @@ enum DiskStore {
       do { data = try info(candidate) } catch let error as POSIXError where error.code == .ENOENT {
         continue
       }
-      guard isDirectory(data) else { continue }
+      guard isDirectory(data) || (allowFiles && isRegular(data)) else { continue }
       try requireDescendant(root, candidate)
       let path = candidate.path
       if !resultPaths.contains(where: { path == $0 || path.hasPrefix($0 + "/") }) {
@@ -215,37 +215,81 @@ enum DiskStore {
       candidates = try children(assets).filter { catalogs.contains($0.lastPathComponent) }
     default: throw SimulatorError("Unknown cleanup category: \(category)")
     }
-    return try compact(root, candidates)
+    return try compact(root, candidates, allowFiles: category == "wallpaper-cache")
   }
-  /// Only the observed snapshot-cache layout is eligible. Configuration and source content stay intact.
+  /// Reject even in-root symlink redirects into durable app data.
+  static func requireUnlinkedDescendant(_ root: URL, _ target: URL) throws {
+    try requireDescendant(root, target)
+    var current = root
+    let components = target.standardizedFileURL.pathComponents.dropFirst(
+      root.standardizedFileURL.pathComponents.count)
+    for component in components {
+      current.appendPathComponent(component)
+      guard !isLink(try info(current)) else {
+        throw SimulatorError("Refusing a symlink in cleanup path: \(current.path)")
+      }
+    }
+  }
+
+  /// Only observed generated snapshot layouts are eligible; never clear a version or its contents.
+  static let posterStorePath = "Library/Application Support/PRBPosterExtensionDataStore"
+
+  static func isPosterVersionEntry(_ parts: [String]) -> Bool {
+    parts.count >= 8 && Int(parts[0]) != nil && parts[1] == "Extensions"
+      && parts[2].hasPrefix("com.apple.")
+      && ["configurations", "descriptors", "staticdescriptors"].contains(parts[3])
+      && UUID(uuidString: parts[4]) != nil && parts[5] == "versions" && Int(parts[6]) != nil
+  }
+
+  static func isPosterRuntimeSnapshot(_ root: URL, _ target: URL) -> Bool {
+    let store = root.appendingPathComponent(posterStorePath)
+    guard contains(store, target) else { return false }
+    let parts = Array(
+      target.standardizedFileURL.pathComponents.dropFirst(
+        store.standardizedFileURL.pathComponents.count))
+    return parts.count == 8 && isPosterVersionEntry(parts)
+      && target.lastPathComponent.range(
+        of: "^RuntimeSnapshot-[a-f0-9]{64}-home\\.atx$", options: .regularExpression) != nil
+  }
+
   static func posterSnapshotCaches(_ root: URL) throws -> [URL] {
-    let store = root.appendingPathComponent(
-      "Library/Application Support/PRBPosterExtensionDataStore")
+    let store = root.appendingPathComponent(posterStorePath)
     guard exists(store) else { return [] }
     try requireDirectory(store)
-    try requireDescendant(root, store)
+    try requireUnlinkedDescendant(root, store)
     let baseCount = store.standardizedFileURL.pathComponents.count
     var candidates: [URL] = []
     try walk(store) { url, data in
       try Task.checkCancellation()
-      guard isDirectory(data), url.lastPathComponent == "SnapshotCache.cachedb" else { return true }
       let parts = Array(url.standardizedFileURL.pathComponents.dropFirst(baseCount))
-      guard parts.count == 9,
-        Int(parts[0]) != nil, parts[1] == "Extensions", parts[2].hasPrefix("com.apple."),
-        ["configurations", "descriptors", "staticdescriptors"].contains(parts[3]),
-        UUID(uuidString: parts[4]) != nil, parts[5] == "versions", Int(parts[6]) != nil,
-        parts[7] == "scratch"
-      else { return false }
-      candidates.append(url)
-      return false
+      guard isPosterVersionEntry(parts) else { return true }
+      if parts.count == 9, parts[7] == "scratch",
+        parts[8] == "SnapshotCache.cachedb", isDirectory(data)
+      {
+        candidates.append(url)
+        return false
+      }
+      if isRegular(data), isPosterRuntimeSnapshot(root, url) {
+        candidates.append(url)
+      }
+      return true
     }
     return candidates
   }
   static func clear(_ root: URL, target: URL) throws {
     guard exists(target) else { return }
     try requireDirectory(root)
+    try requireUnlinkedDescendant(root, target)
+    let data = try info(target)
+    if isRegular(data) {
+      // File targets are generated wallpaper textures only, revalidated at deletion time.
+      guard isPosterRuntimeSnapshot(root, target) else {
+        throw SimulatorError("Refusing an unrecognized cleanup file: \(target.path)")
+      }
+      try fm.removeItem(at: target)
+      return
+    }
     try requireDirectory(target)
-    try requireDescendant(root, target)
     for child in try children(target) {
       // Recheck the parent before each removal; do not follow a child symlink.
       try requireDirectory(target)
@@ -345,8 +389,8 @@ enum DiskStore {
       ),
       ("user-media", "User Media", "Photos, videos, and downloads."),
       (
-        "wallpapers", "Wallpaper Settings & Originals",
-        "Saved configurations and source content. Generated snapshots are offered under Wallpaper & Poster Cache above."
+        "wallpapers", "Wallpaper Originals & Other Data",
+        "Originals, settings, and unrecognized poster files are kept. Recognized generated snapshots can be removed under Wallpaper & Poster Cache above."
       ),
       (
         "system-assets", "Other System Assets",

@@ -334,6 +334,89 @@ struct SimulatorDestructiveSheet: View {
   }
 }
 
+struct BlackWallpaperConfirmationSheet: View {
+  @Environment(\.dismiss) private var dismiss
+  let devices: [SimulatorDevice]
+  let onConfirm: (Bool) -> Void
+  @State private var restoreBoot = true
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 16) {
+      Label("Disable Wallpapers?", systemImage: "photo.badge.minus")
+        .font(.title2.bold())
+      Text(devices.map(\.name).joined(separator: ", ")).font(.headline)
+      Text(
+        "Permanently remove Home and Lock Screen wallpapers, their settings, and generated snapshots. Disable PosterBoard to keep them from being recreated. The background becomes black."
+      )
+      Text("Installed apps, app documents, settings, and photos are kept.").fontWeight(.semibold)
+      Text(
+        "The simulator restarts for verification. This experimental mode was tested on iOS 27.2. Wallpaper customization is unavailable while PosterBoard is disabled. Restoring services may recreate default wallpapers; deleted custom wallpapers are not restored."
+      )
+      .foregroundStyle(.secondary)
+      Toggle("Reopen previously booted simulators", isOn: $restoreBoot)
+      HStack {
+        Spacer()
+        Button("Cancel", role: .cancel) { dismiss() }.keyboardShortcut(.cancelAction)
+        Button("Disable Wallpapers", role: .destructive) {
+          dismiss()
+          onConfirm(restoreBoot)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(.red)
+        .fontWeight(.bold)
+        .disabled(devices.isEmpty)
+      }
+    }
+    .fixedSize(horizontal: false, vertical: true)
+    .padding(24)
+    .frame(width: 540)
+  }
+}
+
+struct WallpaperCleanupConfirmationSheet: View {
+  @Environment(\.dismiss) private var dismiss
+  @Environment(AppModel.self) private var model
+  let devices: [SimulatorDevice]
+  let onConfirm: () -> Void
+
+  private var estimatedSize: String {
+    ByteCountFormatter.string(
+      fromByteCount: model.diskCleanupBytes(for: devices, categoryIDs: ["wallpaper-cache"]),
+      countStyle: .file)
+  }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 16) {
+      Label("Clean Wallpaper Cache?", systemImage: "photo")
+        .font(.title2.bold())
+      Text(devices.map(\.name).joined(separator: ", "))
+        .font(.headline)
+      Text("Remove approximately \(estimatedSize) of generated wallpaper snapshots.")
+      Text("Apps, app data, photos, original wallpapers, and wallpaper settings are kept.")
+        .fontWeight(.semibold)
+      Text(
+        "The simulator shuts down before cleanup. iOS may regenerate these images when the Home Screen or wallpaper changes; cleanup does not prevent future cache growth."
+      )
+      .foregroundStyle(.secondary)
+      HStack {
+        Spacer()
+        Button("Cancel", role: .cancel) { dismiss() }
+          .keyboardShortcut(.cancelAction)
+        Button("Clean Wallpaper Cache", role: .destructive) {
+          dismiss()
+          onConfirm()
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(.red)
+        .fontWeight(.bold)
+      }
+    }
+    .fixedSize(horizontal: false, vertical: true)
+    .padding(24)
+    .frame(width: 520)
+  }
+}
+
 struct DiskCleanupConfirmationSheet: View {
   @Environment(\.dismiss) private var dismiss
   @Environment(AppModel.self) private var model
@@ -462,6 +545,16 @@ struct DiskCleanupConfirmationSheet: View {
 }
 
 #if DEBUG
+  #Preview("Wallpaper cleanup confirmation") {
+    let model = AppModel.preview(
+      diskPlan: .init(
+        udid: "00000000-0000-0000-0000-000000000001", totalBytes: 1_058_512_896,
+        cleanableBytes: 605_528_064,
+        categories: [.init(id: "wallpaper-cache", bytes: 605_528_064, targets: 191)], storage: []))
+    WallpaperCleanupConfirmationSheet(devices: Array(model.devices.prefix(1)), onConfirm: {})
+      .environment(model)
+  }
+
   #Preview("Disk cleanup confirmation") {
     let model = AppModel.preview()
     DiskCleanupConfirmationSheet(

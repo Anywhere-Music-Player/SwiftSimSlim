@@ -198,7 +198,11 @@ final class AppModel {
       let json = try JSONSerialization.data(withJSONObject: [
         "devices": ["com.apple.CoreSimulator.SimRuntime.iOS-27-2": devices]
       ])
+      let wallpaperFixture = try WallpaperModeUITestFixture(data: json)
+      let testWallpaper =
+        ProcessInfo.processInfo.environment["SWIFTSIMSLIM_WALLPAPER_UI_TEST"] == "1"
       let runner = CommandRunner(executor: { _, args in
+        if testWallpaper { return try await wallpaperFixture.execute(args) }
         guard args.contains("list") && args.contains("devices") else {
           throw SimulatorError("Layout fixture permits device-list reads only.")
         }
@@ -543,8 +547,18 @@ final class AppModel {
     await run(.clean(categories: chosen, preserveBootState: preserveBootState), on: devices)
   }
 
-  func fullSlimAndClean(_ devices: [SimulatorDevice], preserveBootState: Bool) async {
-    await run(.fullSlimAndClean(preserveBootState: preserveBootState), on: devices)
+  func enableBlackWallpaper(_ devices: [SimulatorDevice], preserveBootState: Bool) async {
+    await run(.blackWallpaper(preserveBootState: preserveBootState), on: devices)
+  }
+
+  func fullSlimAndClean(
+    _ devices: [SimulatorDevice], preserveBootState: Bool, applyFullSlim: Bool,
+    categories: Set<String>
+  ) async {
+    await run(
+      .fullSlimAndClean(
+        applyFullSlim: applyFullSlim, categories: categories, preserveBootState: preserveBootState),
+      on: devices)
   }
 
   func measure(_ device: SimulatorDevice) async {
@@ -621,7 +635,7 @@ final class AppModel {
     commandLog.removeAll()
   }
 
-  private func diskCleanupBytes(for devices: [SimulatorDevice], categoryIDs: Set<String>) -> Int64 {
+  func diskCleanupBytes(for devices: [SimulatorDevice], categoryIDs: Set<String>) -> Int64 {
     devices.reduce(0) { total, device in
       total + categoryIDs.reduce(0) { $0 + (diskCleanupPlans[device.udid]?.bytes(for: $1) ?? 0) }
     }
@@ -726,15 +740,26 @@ final class AppModel {
         serviceRestartRequired.removeValue(forKey: device.udid)
         setCachedDisabled(
           backup.disabled.intersection(ServiceCatalog.slimmable).count, for: device.udid)
-      case .fullSlimAndClean(let preserve):
+      case .blackWallpaper(let preserve):
+        let store = backupStore
+        let result = try await backend.enableBlackWallpaper(
+          udid: device.udid, preserveBootState: preserve, save: { try await store.save($0) })
+        diskCleanupResults[device.udid] = result
+        removeCachedDisabled(for: device.udid)
+        record(.success, "\(device.name): wallpapers disabled; removed \(result.reclaimedText)")
+      case .fullSlimAndClean(let applyFullSlim, let categories, let preserve):
         let store = backupStore
         let result = try await backend.fullSlimAndClean(
           udid: device.udid, preserveBootState: preserve,
+          applyFullSlim: applyFullSlim, categoryIDs: categories,
           save: { try await store.save($0) })
-        serviceRestartRequired.removeValue(forKey: device.udid)
-        setCachedDisabled(ServiceCatalog.slimmable.count, for: device.udid)
+        if applyFullSlim {
+          serviceRestartRequired.removeValue(forKey: device.udid)
+          setCachedDisabled(ServiceCatalog.slimmable.count, for: device.udid)
+        }
         diskCleanupResults[device.udid] = result
-        record(.success, "\(device.name): Full Slim applied; reclaimed \(result.reclaimedText)")
+        let summary = applyFullSlim ? "Full Slim applied; " : ""
+        record(.success, "\(device.name): \(summary)reclaimed \(result.reclaimedText)")
       case .clean(let categories, let preserve):
         let result = try await backend.cleanDisk(
           udid: device.udid, categoryIDs: categories,

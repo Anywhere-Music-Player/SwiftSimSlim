@@ -73,14 +73,16 @@ struct ContentView: View {
     }
     .toolbar {
       ToolbarItem(placement: .navigation) {
-        Menu {
-          Button("Full Slim & Clean…") {
-            managementSheet = .fullSlimAndClean(model.selectedDevices)
-          }
-          .disabled(!model.canOperateOnSelection)
+        Button {
+          managementSheet = .fullSlimAndClean(model.selectedDevices)
         } label: {
-          ToolbarActionLabel("Optimize", systemImage: "wand.and.stars")
+          ToolbarActionLabel("Full Slim & Clean", systemImage: "wand.and.stars")
+            .labelStyle(.titleAndIcon)
+            .fixedSize(horizontal: true, vertical: false)
+            .frame(minWidth: 132)
         }
+        .disabled(!model.canOperateOnSelection)
+        .help("Choose service slimming and disk cleanup steps")
       }
 
       if slimmingMode == .memory {
