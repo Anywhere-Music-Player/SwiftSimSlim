@@ -7,6 +7,11 @@
     </linearGradient>
   </defs>
   <rect width="1024" height="1024" fill="url(#blueprint)"/>
-  <path d="M 256,0 V 1024 M 512,0 V 1024 M 768,0 V 1024 M 0,256 H 1024 M 0,512 H 1024 M 0,768 H 1024"
-        fill="none" stroke="#ffffff" stroke-opacity=".30" stroke-width="2.5"/>
+  <g fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="7">
+    <path d="M 16,0 V 216 Q 16,256 56,256 H 968 Q 1008,256 1008,216 V 0
+             M 16,1024 V 808 Q 16,768 56,768 H 968 Q 1008,768 1008,808 V 1024"/>
+    <path d="M 0,16 H 216 Q 256,16 256,56 V 968 Q 256,1008 216,1008 H 0
+             M 1024,16 H 808 Q 768,16 768,56 V 968 Q 768,1008 808,1008 H 1024"/>
+    <path d="M 512,0 V 1024 M 0,512 H 1024"/>
+  </g>
 </svg>

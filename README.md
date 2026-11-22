@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/images/swiftsimslim-icon.png?v=blueprint" alt="SwiftSimSlim app icon with iPhone and green RAM on a blue grid" width="144" height="144">
+  <img src="docs/images/swiftsimslim-icon.png?v=ccff5f58" alt="SwiftSimSlim app icon with iPhone and green RAM on a blue grid" width="144" height="144">
   <h1>SwiftSimSlim</h1>
   <p>A native macOS app for managing and slimming iOS simulators.</p>
   <p>
